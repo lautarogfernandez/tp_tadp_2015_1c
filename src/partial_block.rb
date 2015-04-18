@@ -11,4 +11,22 @@ class PartialBlock
     end
   end
 
+  def interesados
+    @lista_tipos_parametros = @lista_tipos_parametros || []
+  end
+
+  def matches (*lista_parametros)
+    @matchea= true
+    if (self.lista_tipos_parametros.length.equal? lista_parametros.length)
+
+      lista_parametros.each_index do |index| if not (lista_parametros[index].is_a? self.lista_tipos_parametros[index])
+                                                        @matchea=false
+                                             end
+                                  end
+    else
+      @matchea = false
+    end
+    @matchea
+  end
+
 end
