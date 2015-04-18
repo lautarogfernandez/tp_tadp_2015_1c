@@ -11,7 +11,7 @@ class PartialBlock
     end
   end
 
-  def interesados
+  def lista_tipos_parametros
     @lista_tipos_parametros = @lista_tipos_parametros || []
   end
 
