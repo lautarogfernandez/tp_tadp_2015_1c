@@ -43,4 +43,13 @@ describe 'Tests de PartialBlock' do
     expect(helloBlock.matches("a")).to be (true)
   end
 
+  it 'La cantidad de parametros y los tipos coinciden y call satisfactorio' do
+    helloBlock = PartialBlock.new([String]) do |who|
+      "Hello #{who}"
+    end
+
+    expect(helloBlock.matches("world!")).to be (true)
+    expect(helloBlock.call("world!")).to eq ("Hello world!")
+  end
+
 end
