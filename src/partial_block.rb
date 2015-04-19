@@ -23,4 +23,13 @@ class PartialBlock
     lista_tipos_parametros.size==argumentos.size
   end
 
+  def call(lista_parametros)
+    if(self.matches(lista_parametros))
+      self.bloque.call(lista_parametros)
+    else
+      raise(ArgumentError)#como hacemos? hacemos nosotros una excepcion o le pasamos por parametro un titulo y mensaje
+    end
+
+  end
+
 end
