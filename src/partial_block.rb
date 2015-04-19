@@ -11,4 +11,16 @@ class PartialBlock
     end
   end
 
+  def matches(*argumentos)
+    if coincide_aridad_entre_argumentos_y_parametros?(@lista_tipos_parametros,argumentos)
+      matchea = @lista_tipos_parametros.zip(argumentos).all? { |tipo_parametro, argumento| argumento.is_a? tipo_parametro }
+    end
+
+    matchea || false
+  end
+
+  def coincide_aridad_entre_argumentos_y_parametros?(lista_tipos_parametros, argumentos)
+    lista_tipos_parametros.size==argumentos.size
+  end
+
 end
