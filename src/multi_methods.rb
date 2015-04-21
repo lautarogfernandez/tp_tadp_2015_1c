@@ -2,6 +2,8 @@ require_relative '../src/partial_block'
 
 module MultiMethods
 
+  mapa_multi_methods
+
   def suma(lista)#se puede agregar a la clase que corresponda en ruby
     sum = 0
     lista.each { |a| sum+=a }
