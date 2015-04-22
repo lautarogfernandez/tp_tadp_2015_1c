@@ -22,9 +22,9 @@ class PartialBlock
     matchea || false
   end
 
-  def call(lista_parametros)
-    if(self.matches(lista_parametros))
-      self.bloque.call(lista_parametros)
+  def call(*argumentos)
+    if(self.matches(*argumentos))
+      self.bloque.call(*argumentos)
     else
       raise(ArgumentError)#como hacemos? hacemos nosotros una excepcion o le pasamos por parametro un titulo y mensaje
     end
