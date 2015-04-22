@@ -9,6 +9,21 @@ describe 'Tests de MultiMethods' do
     include MultiMethods
   end
 
+  class Saludador
+    def metodo_para_asegurarme_que_self_es_saludador
+
+    end
+
+    partial_def :saludar, [String] do |nombre|
+      "Hola #{nombre}"
+    end
+
+    partial_def :saludar, [String, Integer] do |nombre, cantidad_de_saludos|
+      "Hola #{nombre} " * cantidad_de_saludos
+    end
+
+  end
+
   it 'Prueba del calculo de la distancia parcial' do
     calculo=A.new()
     expect(calculo.distancia_parametro_parcial(3,Numeric)).to eq(2)
@@ -40,10 +55,22 @@ describe 'Tests de MultiMethods' do
     A.partial_def :concat, [String, Integer] do |s1,n|
       s1 * n
     end
-    partial_def :concat, [Object, Object] do |o1, o2|
+    A.partial_def :concat, [Object, Object] do |o1, o2|
       "Objetos concatenados"
     end
     expect(A.new.concat(Object.new, 3)=="Objetos concatenados").to be(true)
   end
+
+  it 'Prueba de definir multimetodo en clase' do
+    saludador = Saludador.new()
+    expect(saludador.saludar("Ale")).to eq ("Hola Ale")
+  end
+
+
+  it 'Ddefinir multimetodo en clase con argumentos que son subclases del tipo de parametro (FixNum e Integer)' do
+    saludador = Saludador.new()
+    expect(saludador.saludar("Ale", 3)).to eq ("Hola Ale Hola Ale Hola Ale ")
+  end
+
 
 end
