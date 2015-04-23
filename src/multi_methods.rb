@@ -9,7 +9,7 @@ module MultiMethods
     @mapa_multi_methods = @mapa_multi_methods || Hash.new{ |nombre_metodo,tipos| nombre_metodo[tipos] = Hash.new}
   end
 
-  def suma(lista)#se puede agregar a la clase que corresponda en ruby
+  def suma(lista)#TODO:se puede agregar a la clase que corresponda en ruby
     sum = 0
     lista.each { |a| sum+=a }
     sum

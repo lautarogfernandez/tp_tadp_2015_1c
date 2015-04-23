@@ -7,7 +7,7 @@ describe 'Tests de PartialBlock' do
 
     expect{helloBlock = PartialBlock.new([Integer,String]) do |who|
       "Hello #{who}" end
-    }.to raise_error(ArgumentError)#ver con excepcion lanzada
+    }.to raise_error(ArgumentError)#TODO:ver con excepcion lanzada
 
   end
 
@@ -47,9 +47,14 @@ describe 'Tests de PartialBlock' do
     helloBlock = PartialBlock.new([String]) do |who|
       "Hello #{who}"
     end
-
     expect(helloBlock.matches("world!")).to be (true)
     expect(helloBlock.call("world!")).to eq ("Hello world!")
+
+    otherBlock = PartialBlock.new([]) do ||
+      "Hello world!"
+    end
+    expect(otherBlock.matches()).to be (true)
+    expect(otherBlock.call()).to eq ("Hello world!")
   end
 
 end
