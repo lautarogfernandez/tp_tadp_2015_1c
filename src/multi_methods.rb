@@ -63,4 +63,19 @@ end
 
 class Class
   include MultiMethods
+
+
+  def respond_to?(*argv)
+    responde=false
+
+    if super.respond_to?(*argv)
+     responde=true
+    else
+
+   responde= @mapa_multi_methods.any?{|(nombre, partialblock)| nombre.eql? argv[0] and partialblock.lista_tipos_parametros.eql? argv[2]}
+    end
+    responde
+  end
 end
+
+
