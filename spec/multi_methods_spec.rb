@@ -9,9 +9,22 @@ describe 'Tests de MultiMethods' do
     include MultiMethods
   end
 
+  class Guerrero
+    attr_accessor :puesto
+
+  end
+
   class Saludador
+
+    attr_accessor :nombre
+
     def metodo_para_asegurarme_que_self_es_saludador
 
+    end
+
+    def saludo_militar puesto
+      self
+      "#{puesto}, si #{puesto}!"
     end
 
     partial_def :saludar, [String] do |nombre|
@@ -20,6 +33,14 @@ describe 'Tests de MultiMethods' do
 
     partial_def :saludar, [String, Integer] do |nombre, cantidad_de_saludos|
       "Hola #{nombre} " * cantidad_de_saludos
+    end
+
+    partial_def :saludar, [Guerrero] do |guerrero|
+      self.saludo_militar(guerrero.puesto)
+    end
+
+    partial_def :saludar, [String, String] do |nombre1, nombre2|
+      "Hola #{nombre1} y #{nombre2}, me llamo #{@nombre}"
     end
 
   end
@@ -67,9 +88,24 @@ describe 'Tests de MultiMethods' do
   end
 
 
-  it 'Ddefinir multimetodo en clase con argumentos que son subclases del tipo de parametro (FixNum e Integer)' do
+  it 'Definir multimetodo en clase con argumentos que son subclases del tipo de parametro (FixNum e Integer)' do
     saludador = Saludador.new()
     expect(saludador.saludar("Ale", 3)).to eq ("Hola Ale Hola Ale Hola Ale ")
+  end
+
+  it 'Funciona si usa dentro de un partial method una referencia con self a otro metodo de la misma clase' do
+    guerrero = Guerrero.new()
+    guerrero.puesto="Capitan"
+
+    saludador = Saludador.new()
+    saludador.saludo_militar(guerrero)
+    expect(saludador.saludar(guerrero)).to eq ("Capitan, si Capitan!")
+  end
+
+  it 'Funciona si se usa un partial method Statefull' do
+    saludador = Saludador.new()
+    saludador.nombre="Jose"
+    expect(saludador.saludar("Jorge","Juan")).to eq ("Hola Jorge y Juan, me llamo Jose")
   end
 
 

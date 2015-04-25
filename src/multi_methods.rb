@@ -53,12 +53,13 @@ module MultiMethods
     if(!self.respond_to?(:nombre))
       self.send(:define_method,nombre) do |*args|
          partial_block =  self.class.obtener_multimethod_a_ejecutar(__method__, args)
-         partial_block.call(*args) # TODO hmm no habria que bindearlo a self?? hay que hacer un test con un metodo statefull
+
+         self.instance_exec *args, &partial_block.bloque
+         #partial_block.call(*args) # TODO hmm no habria que bindearlo a self?? hay que hacer un test con un metodo statefull
       end
     end
   end
 end
-
 
 class Class
   include MultiMethods
