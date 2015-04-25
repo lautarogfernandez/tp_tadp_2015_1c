@@ -108,5 +108,42 @@ describe 'Tests de MultiMethods' do
     expect(saludador.saludar("Jorge","Juan")).to eq ("Hola Jorge y Juan, me llamo Jose")
   end
 
+  it 'Funciona si se usa un partial method reabriendo la clase abajo sin pissar los anteriores' do
+    class Saludador
+      partial_def :saludar, [Float] do |cuasi_saludo|
+        "Te #{cuasi_saludo} saludo!"
+      end
+    end
+
+    saludador = Saludador.new()
+    expect(saludador.saludar(0.5)).to eq ("Te 0.5 saludo!")
+  end
+
+
+  it 'Funciona si se usa un partial method reabriendo la clase abajo redefiniendo un metodo anterior' do
+    class Saludador
+      partial_def :saludar, [String] do |nombre|
+        "Como va #{nombre}?"
+      end
+    end
+
+    saludador = Saludador.new()
+    expect(saludador.saludar("Pepe")).to eq ("Como va Pepe?")
+  end
+
+
+  it 'Funciona si se agrega un multi method a un objeto/instancia' do
+    saludador_navidenio = Saludador.new()
+    saludador_navidenio.partial_def :saludar_en_navidad, [String] do |nombre|
+      "Feliz navidad #{nombre}"
+    end
+    saludador_navidenio.partial_def :saludar_en_navidad, [Integer] do |cantidad|
+      "Oh " * cantidad # o era jo jo jo??
+    end
+    expect(saludador.saludar_en_navidad(3)).to eq ("Oh Oh Oh ")
+    expect(saludador.saludar_en_navidad("Rodolfo")).to eq ("Feliz navidad Rodolfo")
+  end
+
+
 
 end
