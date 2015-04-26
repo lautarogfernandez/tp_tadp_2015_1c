@@ -182,4 +182,25 @@ describe 'Tests de MultiMethods' do
     expect(B.multimethods().size).to be (3)
   end
 
+  it 'Prueba del metodo multimethod' do
+    class B
+    end
+    B.partial_def :saludar, [String] do |nombre|
+      "Como va #{nombre}?"
+    end
+    B.partial_def :gritar, [] do ||
+      "AHHHHHHHHHHHHHHH!!!!!!"
+    end
+    expect(B.multimethod(:saludar)).to eq (B.mapa_multi_methods.values_at(:saludar))
+    expect(B.multimethod(:gritar)).to eq (B.mapa_multi_methods.values_at(:gritar))
+    B.partial_def :saludar, [String,Integer] do |nombre, numero|
+      "Hola, #{nombre}, Boca salió #{numero} a 0"
+    end
+    expect(B.multimethod(:saludar)).to eq (B.mapa_multi_methods.values_at(:saludar))
+    B.partial_def :decir_algo, [String] do |algo|
+      "Digo #{algo}"
+    end
+    expect(B.multimethod(:decir_algo)).to eq (B.mapa_multi_methods.values_at(:decir_algo))
+  end
+
 end

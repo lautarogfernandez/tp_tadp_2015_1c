@@ -9,18 +9,12 @@ module MultiMethods
     @mapa_multi_methods = @mapa_multi_methods || Hash.new{ |nombre_metodo,tipos| nombre_metodo[tipos] = Hash.new}
   end
 
-  def suma(lista)#TODO:se puede agregar a la clase que corresponda en ruby
-    sum = 0
-    lista.each { |a| sum+=a }
-    sum
-  end
-
   def distancia_parametro_parcial(parametro,tipo_parametro)
     parametro.class.ancestors.index(tipo_parametro)
   end
 
   def distancia_parametro_total(lista_parametros,lista_tipos_parametro)#arreglar segun corresponda segun suma
-    total =lista_parametros.collect { |parametro| distancia_parametro_parcial(parametro,lista_tipos_parametro[lista_parametros.index(parametro)])*(lista_parametros.index(parametro)+1) }.reduce(0, :+)
+    lista_parametros.collect { |parametro| distancia_parametro_parcial(parametro,lista_tipos_parametro[lista_parametros.index(parametro)])*(lista_parametros.index(parametro)+1) }.reduce(0, :+)
   end
 
   def obtener_multimethod_a_ejecutar(metodo_ejecutado, argumentos)
@@ -68,6 +62,14 @@ module MultiMethods
 
   def multimethods()
     self.mapa_multi_methods.keys
+  end
+
+  def multimethod(nombre)
+    if (self.mapa_multi_methods.has_key?(nombre))
+      self.mapa_multi_methods.values_at(nombre)
+    else
+      raise(NoMethodError)
+    end
   end
 
 end
