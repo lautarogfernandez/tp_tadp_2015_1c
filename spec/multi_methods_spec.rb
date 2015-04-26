@@ -119,6 +119,35 @@ describe 'Tests de MultiMethods' do
     expect(saludador.saludar(0.5)).to eq ("Te 0.5 saludo!")
   end
 
+  it 'Funciona si se agrega un multi method a un objeto/instancia' do
+    saludador_navidenio = Saludador.new()
+    saludador = Saludador.new()
+
+    saludador_navidenio.partial_def :saludar_en_navidad, [String] do |nombre|
+      "Feliz navidad #{nombre}"
+    end
+
+    saludador_navidenio.partial_def :saludar_en_navidad, [Integer] do |cantidad|
+      "Oh " * cantidad # o era jo jo jo??
+    end
+
+    class Saludador
+      partial_def :saludar, [String] do |nombre|
+        "Como va #{nombre}?"
+      end
+    end
+
+    expect{(Saludador.saludar_en_navidad(3))}.to raise_error(NoMethodError)
+    expect{(saludador_navidenio.singleton_class.saludar_en_navidad(3))}.to raise_error(NoMethodError)
+    expect{(saludador.saludar_en_navidad(3))}.to raise_error(NoMethodError)
+
+    expect(saludador_navidenio.saludar_en_navidad(3)).to eq ("Oh Oh Oh ")
+    expect(saludador_navidenio.saludar_en_navidad("Rodolfo")).to eq ("Feliz navidad Rodolfo")
+    expect(saludador_navidenio.saludar("Ale")).to eq ("Como va Ale?")
+    expect(saludador_navidenio.saludo_militar("Capitan")).to eq ("Capitan, si Capitan!")
+
+  end
+
 
   it 'Funciona si se usa un partial method reabriendo la clase abajo redefiniendo un metodo anterior' do
     class Saludador
@@ -132,17 +161,7 @@ describe 'Tests de MultiMethods' do
   end
 
 
-  it 'Funciona si se agrega un multi method a un objeto/instancia' do
-    saludador_navidenio = Saludador.new()
-    saludador_navidenio.partial_def :saludar_en_navidad, [String] do |nombre|
-      "Feliz navidad #{nombre}"
-    end
-    saludador_navidenio.partial_def :saludar_en_navidad, [Integer] do |cantidad|
-      "Oh " * cantidad # o era jo jo jo??
-    end
-    expect(saludador.saludar_en_navidad(3)).to eq ("Oh Oh Oh ")
-    expect(saludador.saludar_en_navidad("Rodolfo")).to eq ("Feliz navidad Rodolfo")
-  end
+
 
 
 

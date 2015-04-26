@@ -30,4 +30,8 @@ class PartialBlock
     end
   end
 
+  def call_with_binding(*argumentos, new_self)
+    new_self.instance_exec *argumentos, &bloque
+  end
+
 end

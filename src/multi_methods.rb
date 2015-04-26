@@ -20,7 +20,7 @@ module MultiMethods
   end
 
   def distancia_parametro_total(lista_parametros,lista_tipos_parametro)#arreglar segun corresponda segun suma
-    total =suma(lista_parametros.collect { |parametro| distancia_parametro_parcial(parametro,lista_tipos_parametro[lista_parametros.index(parametro)])*(lista_parametros.index(parametro)+1) })
+    total =lista_parametros.collect { |parametro| distancia_parametro_parcial(parametro,lista_tipos_parametro[lista_parametros.index(parametro)])*(lista_parametros.index(parametro)+1) }.reduce(0, :+)
   end
 
   def obtener_multimethod_a_ejecutar(metodo_ejecutado, argumentos)
@@ -50,32 +50,44 @@ module MultiMethods
 
     agregar_a_lista_de_multimethods(nombre, partial_block)
 
-    if(!self.respond_to?(:nombre))
+    if(!self.respond_to?(nombre))
+      class_up = self
+
       self.send(:define_method,nombre) do |*args|
-         partial_block =  self.class.obtener_multimethod_a_ejecutar(__method__, args)
+         partial_block = class_up.obtener_multimethod_a_ejecutar(__method__, args)
 
          self.instance_exec *args, &partial_block.bloque
-         #partial_block.call(*args) # TODO hmm no habria que bindearlo a self?? hay que hacer un test con un metodo statefull
+
+         # no me gusta de esta opcion que abre la posibilidad de ejecutar el partial block sin el mathchs.
+         # El tema uqe para solucionarlo habria que usar el matches adentro dle nuevo call_with_binding (llamandose 2 veces al matches)
+         # partial_block.call_with_binding(*args, self)
       end
     end
   end
 end
 
-class Class
+class Module
   include MultiMethods
-
-
-  def respond_to?(*argv)
-    responde=false
-
-    if super.respond_to?(*argv)
-     responde=true
-    else
-
-   responde= @mapa_multi_methods.any?{|(nombre, partialblock)| nombre.eql? argv[0] and partialblock.lista_tipos_parametros.eql? argv[2]}
-    end
-    responde
-  end
+  
+  # def respond_to?(*argv)
+  #   responde=false
+  #
+  #   if super.respond_to?(*argv)
+  #    responde=true
+  #   else
+  #
+  #  responde= @mapa_multi_methods.any?{|(nombre, partialblock)| nombre.eql? argv[0] and partialblock.lista_tipos_parametros.eql? argv[2]}
+  #   end
+  #   responde
+  # end
 end
 
+class Object
 
+  def partial_def (nombre,lista_parametros,&bloque)
+
+    self.singleton_class.partial_def(nombre,lista_parametros,&bloque)
+
+  end
+
+end
