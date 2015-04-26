@@ -148,7 +148,6 @@ describe 'Tests de MultiMethods' do
 
   end
 
-
   it 'Funciona si se usa un partial method reabriendo la clase abajo redefiniendo un metodo anterior' do
     class Saludador
       partial_def :saludar, [String] do |nombre|
@@ -160,9 +159,27 @@ describe 'Tests de MultiMethods' do
     expect(saludador.saludar("Pepe")).to eq ("Como va Pepe?")
   end
 
-
-
-
-
+  it 'Prueba del metodo multimethods' do
+    class B
+    end
+    B.partial_def :saludar, [String] do |nombre|
+      "Como va #{nombre}?"
+    end
+    B.partial_def :gritar, [] do ||
+      "AHHHHHHHHHHHHHHH!!!!!!"
+    end
+    expect(B.multimethods()).to include (:saludar)
+    expect(B.multimethods().size).to be (2)
+    B.partial_def :saludar, [String,Integer] do |nombre, numero|
+      "Hola, #{nombre}, Boca salió #{numero} a 0"
+    end
+    expect(B.multimethods()).to include (:saludar)
+    expect(B.multimethods().size).to be (2)
+    B.partial_def :decir_algo, [String] do |algo|
+      "Digo #{algo}"
+    end
+    expect(B.multimethods()).to include (:saludar)
+    expect(B.multimethods().size).to be (3)
+  end
 
 end

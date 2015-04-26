@@ -64,6 +64,12 @@ module MultiMethods
       end
     end
   end
+
+
+  def multimethods()
+    self.mapa_multi_methods.keys
+  end
+
 end
 
 class Module
@@ -85,9 +91,7 @@ end
 class Object
 
   def partial_def (nombre,lista_parametros,&bloque)
-
     self.singleton_class.partial_def(nombre,lista_parametros,&bloque)
-
   end
 
 end
