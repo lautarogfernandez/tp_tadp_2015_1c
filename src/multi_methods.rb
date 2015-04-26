@@ -68,7 +68,7 @@ module MultiMethods
     if (self.mapa_multi_methods.has_key?(nombre))
       self.mapa_multi_methods.values_at(nombre)
     else
-      raise(NoMethodError)
+      false #no me deja tirar exepcion
     end
   end
 

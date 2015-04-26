@@ -183,24 +183,26 @@ describe 'Tests de MultiMethods' do
   end
 
   it 'Prueba del metodo multimethod' do
-    class B
+    class C
     end
-    B.partial_def :saludar, [String] do |nombre|
+    C.partial_def :saludar, [String] do |nombre|
       "Como va #{nombre}?"
     end
-    B.partial_def :gritar, [] do ||
+    C.partial_def :gritar, [] do ||
       "AHHHHHHHHHHHHHHH!!!!!!"
     end
-    expect(B.multimethod(:saludar)).to eq (B.mapa_multi_methods.values_at(:saludar))
-    expect(B.multimethod(:gritar)).to eq (B.mapa_multi_methods.values_at(:gritar))
-    B.partial_def :saludar, [String,Integer] do |nombre, numero|
+    expect(C.multimethod(:saludar)).to eq (C.mapa_multi_methods.values_at(:saludar))
+    expect(C.multimethod(:gritar)).to eq (C.mapa_multi_methods.values_at(:gritar))
+    expect(C.multimethod(:decir_algo)).to be(false)
+    C.partial_def :saludar, [String,Integer] do |nombre, numero|
       "Hola, #{nombre}, Boca salió #{numero} a 0"
     end
-    expect(B.multimethod(:saludar)).to eq (B.mapa_multi_methods.values_at(:saludar))
-    B.partial_def :decir_algo, [String] do |algo|
+    expect(C.multimethod(:saludar)).to eq (C.mapa_multi_methods.values_at(:saludar))
+    C.partial_def :decir_algo, [String] do |algo|
       "Digo #{algo}"
     end
-    expect(B.multimethod(:decir_algo)).to eq (B.mapa_multi_methods.values_at(:decir_algo))
+    expect(C.multimethod(:decir_algo)).to eq (C.mapa_multi_methods.values_at(:decir_algo))
+    expect(C.multimethod(:jo)).to be(false)
   end
 
 end
