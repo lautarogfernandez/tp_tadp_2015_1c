@@ -22,13 +22,11 @@ module MultiMethods
   end
 
   def obtener_multimethod_a_ejecutar(metodo_ejecutado, argumentos)
-
     todos_los_que_matchean=obtener_multimethods(metodo_ejecutado).select { |lista_parametros, partial_block| partial_block.matches(*argumentos)}
     if(todos_los_que_matchean.empty?)
       raise(StandardError)
     else
-      lalala =todos_los_que_matchean.sort_by{|tipos_params_1,partial_block_1|(-1)* distancia_parametro_total(argumentos,tipos_params_1)}
-      multimethod_a_ejecutar=lalala.reverse[0][1]
+      multimethod_a_ejecutar =todos_los_que_matchean.sort_by{|tipos_params_1,partial_block_1|(-1)* distancia_parametro_total(argumentos,tipos_params_1)}.reverse[0][1]
       multimethod_a_ejecutar
     end
   end
@@ -59,7 +57,6 @@ module MultiMethods
       end
     end
   end
-
 
   def multimethods()
     self.mapa_multi_methods.keys
