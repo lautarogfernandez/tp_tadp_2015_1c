@@ -13,23 +13,24 @@ module MultiMethods
     parametro.class.ancestors.index(tipo_parametro)
   end
 
-  def distancia_parametro_total(lista_parametros,lista_tipos_parametro)#arreglar segun corresponda segun suma
+  def distancia_parametro_total(lista_parametros,lista_tipos_parametro)
     lista_parametros.collect { |parametro| distancia_parametro_parcial(parametro,lista_tipos_parametro[lista_parametros.index(parametro)])*(lista_parametros.index(parametro)+1) }.reduce(0, :+)
+  end
+
+  def obtener_multimethods(nombre_metodo)
+    mapa_multi_methods.values_at(nombre_metodo).first()
   end
 
   def obtener_multimethod_a_ejecutar(metodo_ejecutado, argumentos)
 
-    mapa_tipos_parametros = @mapa_multi_methods[metodo_ejecutado] if @mapa_multi_methods.key?(metodo_ejecutado) # Si ya entre aca deberia existir el metodo en el mapa pero por las ddudas
-
-    mapa_tipos_parametros = mapa_tipos_parametros.select{|tipos_params, partial_block| partial_block.matches(*argumentos) }
-    if  !mapa_tipos_parametros.empty?
-      multimethod_a_ejecutar = mapa_tipos_parametros.to_a[0][1]
+    todos_los_que_matchean=obtener_multimethods(metodo_ejecutado).select { |lista_parametros, partial_block| partial_block.matches(*argumentos)}
+    if(todos_los_que_matchean.empty?)
+      raise(StandardError)
     else
-      raise(ArgumentError)
+      lalala =todos_los_que_matchean.sort_by{|tipos_params_1,partial_block_1|(-1)* distancia_parametro_total(argumentos,tipos_params_1)}
+      multimethod_a_ejecutar=lalala.reverse[0][1]
+      multimethod_a_ejecutar
     end
-
-    multimethod_a_ejecutar
-
   end
 
   def agregar_a_lista_de_multimethods(nombre, partial_block)

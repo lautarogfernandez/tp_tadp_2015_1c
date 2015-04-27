@@ -108,7 +108,7 @@ describe 'Tests de MultiMethods' do
     expect(saludador.saludar("Jorge","Juan")).to eq ("Hola Jorge y Juan, me llamo Jose")
   end
 
-  it 'Funciona si se usa un partial method reabriendo la clase abajo sin pissar los anteriores' do
+  it 'Funciona si se usa un partial method reabriendo la clase abajo sin pisar los anteriores' do
     class Saludador
       partial_def :saludar, [Float] do |cuasi_saludo|
         "Te #{cuasi_saludo} saludo!"
@@ -203,6 +203,39 @@ describe 'Tests de MultiMethods' do
     end
     expect(C.multimethod(:decir_algo)).to eq (C.mapa_multi_methods.values_at(:decir_algo))
     expect(C.multimethod(:jo)).to be(false)
+  end
+
+  it 'Pruebo que seleccione el metodo correcto' do
+    class Saluda
+      partial_def :saludar, [String] do |nombre|
+        "Como va #{nombre}?"
+      end
+      partial_def :saludar, [Integer] do |numero|
+        "Hola! " * numero
+      end
+      partial_def :saludar, [String,Integer] do |nombre,numero|
+        "Como va #{nombre}?" * numero
+      end
+      partial_def :saludar, [Numeric] do |numero|
+        "Hola version #{numero}"
+      end
+    end
+    expect(Saluda.new.saludar("Casty")).to eq("Como va Casty?")
+    expect(Saluda.new.saludar(5)).to eq("Hola! Hola! Hola! Hola! Hola! ")
+    expect(Saluda.new.saludar("Casty",3)).to eq("Como va Casty?Como va Casty?Como va Casty?")
+    expect(Saluda.new.saludar(5.0)).to eq("Hola version 5.0")
+    #expect(Saluda.new.saludar("Casty",3.0)).to raise_error(StandardError) #algo aca no anda con las excepciones
+
+    class Concatenador
+      partial_def :concat, [String, Integer] do |s1,n|
+        s1 * n
+      end
+      partial_def :concat, [Object, Object] do |o1, o2|
+        "Objetos concatenados"
+      end
+    end
+    expect(Concatenador.new.concat("Hello", 2)).to eq("HelloHello")
+    expect(Concatenador.new.concat(Object.new, 3)).to eq("Objetos concatenados")
   end
 
 end
