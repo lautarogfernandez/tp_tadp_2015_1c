@@ -238,4 +238,103 @@ describe 'Tests de MultiMethods' do
     expect(Concatenador.new.concat(Object.new, 3)).to eq("Objetos concatenados")
   end
 
+  class Soldado
+
+    attr_accessor :vida
+
+    def initialize
+      @vida = 100
+    end
+
+    def sufrir_danio(danio)
+      @vida = @vida - danio
+    end
+
+  end
+
+  class Radar
+    def neutralizado
+
+    end
+  end
+
+  class Tanque
+
+    partial_def :ataca_con_ametralladora, [Soldado] do |soldado|
+      soldado.sufrir_danio(40)
+    end
+
+    partial_def :ataca_a, [Tanque] do |objetivo|
+      self.ataca_con_canion(objetivo)
+    end
+
+    partial_def :ataca_a, [Soldado] do |objetivo|
+      self.ataca_con_ametralladora(objetivo)
+    end
+
+  end
+
+  class Panzer < Tanque
+
+    def uber_ataca_a(soldado)
+      soldado.sufrir_danio(50)
+    end
+
+    def neutralizar(radar)
+      radar.neutralizado()
+    end
+
+    #Esta definición se suma a las heredadas de Tanque, sin pisar ninguna
+    partial_def :ataca_a, [Radar] do |radar|
+      self.neutralizar(radar)
+    end
+
+    #Pisa la definición parcial de la superclase correspondiente al soldado
+    partial_def :ataca_a, [Soldado] do |soldado|
+      self.uber_ataca_a(soldado)
+    end
+  end
+
+  it 'Metodo normal debe sobreescribir un multimethod heredado' do
+    #TODO
+  end
+
+  it 'Metodo multimethod debe sobreescribir metodo normal heredado' do
+     panzer = Panzer.new()
+  #   panzer.ataca_a(Soldado.new)
+    #TODO
+  end
+
+
+  it 'Metodo multimethod debe sobreescribir metodo multimethod heredado' do
+    soldado = Soldado.new
+    panzer = Panzer.new()
+
+    panzer.ataca_a(soldado)
+    expect(soldado.vida).to eq (50)
+  end
+
+  it 'Metodo parcial complementa un multimehod heredado' do
+    expect(Panzer.new().class.obtener_definiciones_parciales_aplicables_a_clase_actual(:ataca_a).keys.to_s).to eq("[[Tanque], [Soldado], [Radar]]")
+  end
+
+  it 'Subclase puede acceder a multimethod heredado' do
+    soldado = Soldado.new
+    Panzer.new().ataca_con_ametralladora(soldado)
+    expect(soldado.vida).to eq(60)
+  end
+
+  it 'Metodo parcial en instancia complementa multimethods de clase y heredados' do
+    soldado = Soldado.new
+    panzer = Panzer.new()
+
+    panzer.partial_def :ataca_a, [Soldado, Integer] do |objetivo,cantidad|
+      self.uber_ataca_a(soldado)
+      self.uber_ataca_a(soldado)
+    end
+
+    panzer.ataca_a(soldado,2)
+    expect(soldado.vida).to eq(0)
+  end
+
 end

@@ -5,7 +5,6 @@ module MultiMethods
   attr_accessor :mapa_multi_methods
 
   def mapa_multi_methods
-    # @mapa_multi_methods || Hash.new # -> cambiazo por array de hashes me confunde el hash de hashes
     @mapa_multi_methods = @mapa_multi_methods || Hash.new{ |nombre_metodo,tipos| nombre_metodo[tipos] = Hash.new}
   end
 
@@ -17,12 +16,31 @@ module MultiMethods
     lista_parametros.collect { |parametro| distancia_parametro_parcial(parametro,lista_tipos_parametro[lista_parametros.index(parametro)])*(lista_parametros.index(parametro)+1) }.reduce(0, :+)
   end
 
-  def obtener_multimethods(nombre_metodo)
+  def obtener_multimethods_en_esta_clase(nombre_metodo)
     mapa_multi_methods.values_at(nombre_metodo).first()
   end
 
+  def tiene_multimethod?(nombre_metodo)
+    mapa_multi_methods.has_key?(nombre_metodo)
+  end
+
+  def obtener_definiciones_parciales_aplicables_a_clase_actual(nombre_metodo, definiciones_parciales = {})
+
+    resultado = obtener_multimethods_en_esta_clase(nombre_metodo).merge(definiciones_parciales)
+
+    proximo_ancestor = self.ancestors[1]
+
+    if( proximo_ancestor.tiene_multimethod?(nombre_metodo) )
+      resultado = proximo_ancestor.obtener_definiciones_parciales_aplicables_a_clase_actual(nombre_metodo, resultado)
+    end
+
+    resultado
+
+  end
+
   def obtener_multimethod_a_ejecutar(metodo_ejecutado, argumentos)
-    todos_los_que_matchean=obtener_multimethods(metodo_ejecutado).select { |lista_parametros, partial_block| partial_block.matches(*argumentos)}
+    definiciones_parciales = obtener_definiciones_parciales_aplicables_a_clase_actual(metodo_ejecutado)
+    todos_los_que_matchean = definiciones_parciales.select { |lista_parametros, partial_block| partial_block.matches(*argumentos)}
     if(todos_los_que_matchean.empty?)
       raise(StandardError)
     else
