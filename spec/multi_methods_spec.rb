@@ -337,4 +337,23 @@ describe 'Tests de MultiMethods' do
     expect(soldado.vida).to eq(0)
   end
 
+  it 'Probando respond_to?' do
+    class A
+      partial_def :concat, [String, Integer] do |s1,n|
+        s1 * n
+      end
+
+      partial_def :concat, [Object, Object] do |o1, o2|
+        "Objetos concatenados"
+      end
+    end
+
+
+    expect(A.new.class.respond_to?(:concat)).to be(true)
+    expect(A.new.class.respond_to?(:to_s)).to be(true)
+    expect(A.new.class.respond_to?(:concat,false,[String, Integer])).to be (true)
+    expect(A.new.class.respond_to?(:concat,false,[String, Integer,String])).to be (false)
+    end
+
+
 end
