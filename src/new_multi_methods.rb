@@ -141,7 +141,31 @@ class Module
   # end
 end
 
+
+class Base
+  attr_accessor :selfie
+
+  def initialize(selfie)
+    @selfie = selfie
+  end
+end
+
 class Object
+
+  def method_missing(metodo, *args)
+    if(self.is_a?(Base))
+      bloque_parcial = self.selfie.class.ancestors[1].obtener_multimethod_a_ejecutar(metodo, args)
+      self.selfie.instance_exec *args, &bloque_parcial.bloque
+      #No se puede hacer algo asi??
+      #self.selfie.super(method)
+    elsif(metodo.equal?(:base))
+      Base.new(self)
+    else
+      super(metodo, *args)
+    end
+
+  end
+
 
   def partial_def (nombre,lista_parametros,&bloque)
     self.singleton_class.partial_def(nombre,lista_parametros,&bloque)

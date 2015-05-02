@@ -1,5 +1,5 @@
 require 'rspec'
-require_relative '../src/multi_methods'
+require_relative '../src/new_multi_methods'
 require_relative '../src/partial_block'
 
 describe 'Tests de MultiMethods' do
@@ -311,6 +311,13 @@ describe 'Tests de MultiMethods' do
     partial_def :ataca_a, [Soldado] do |soldado|
       self.uber_ataca_a(soldado)
     end
+
+
+    partial_def :ataca_a, [Soldado, String] do |soldado, mensaje|
+      base.ataca_a(soldado)
+      "El soldado fue atacado levemente como si lo ataco un tanque, #{mensaje}"
+    end
+
   end
 
   it 'Metodo normal debe sobreescribir un multimethod heredado' do
@@ -353,6 +360,15 @@ describe 'Tests de MultiMethods' do
 
     panzer.ataca_a(soldado,2)
     expect(soldado.vida).to eq(0)
+  end
+
+  it 'Metodo parcial funciona con super' do
+    soldado = Soldado.new
+    panzer = Panzer.new()
+    mensaje_amenazante = panzer.ataca_a(soldado, "la proxima esta caput")
+
+    expect(mensaje_amenazante).to eq("El soldado fue atacado levemente como si lo ataco un tanque, la proxima esta caput")
+    expect(soldado.vida).to eq(60)
   end
 
 end
