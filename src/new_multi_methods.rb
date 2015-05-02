@@ -159,8 +159,24 @@ class Object
       #self.selfie.super(method)
     elsif(metodo.equal?(:base))
       Base.new(self)
-    # elsif(metodo.equal?(:base_posta))
-    #   puts "lala"
+    elsif(metodo.equal?(:base_posta))
+       file_line= caller.select{|line| line.include?("block in <class:#{self.class}>")}.first.split(':')[0,2]
+       file_path = file_line[0]
+       file_line = file_line[1].to_i
+       #File.open file_line[0]
+
+       while file_line > 0
+         line_string = IO.readlines(file_path)[file_line]
+         if(line_string.include?("partial_def"))
+           line_with_method_name = line_string
+           break
+         end
+         file_line = file_line - 1
+       end
+       metodo_obtenido = line_with_method_name.split(',')[0].split(' ')[1].gsub!(':','').to_sym
+       bloque_parcial = self.class.ancestors[1].obtener_multimethod_a_ejecutar(metodo_obtenido, args)
+       self.instance_exec *args, &bloque_parcial.bloque
+
     else
       super(metodo, *args)
     end

@@ -327,7 +327,7 @@ describe 'Tests de MultiMethods' do
     end
 
     partial_def :cantidad_soldados_que_puede_transportar, [Soldado] do |tripulante|
-      base_posta(Soldado) + 5
+      base_posta(tripulante) + 5
     end
 
   end
