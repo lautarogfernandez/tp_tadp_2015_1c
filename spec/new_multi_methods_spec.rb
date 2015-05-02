@@ -277,6 +277,11 @@ describe 'Tests de MultiMethods' do
   end
 
   class Tanque
+    attr_accessor :vida
+
+    def initialize
+      @vida = 100
+    end
 
     partial_def :ataca_con_ametralladora, [Soldado] do |soldado|
       soldado.sufrir_danio(40)
@@ -288,6 +293,10 @@ describe 'Tests de MultiMethods' do
 
     partial_def :ataca_a, [Soldado] do |objetivo|
       self.ataca_con_ametralladora(objetivo)
+    end
+
+    partial_def :cantidad_soldados_que_puede_transportar, [Soldado] do |objetivo|
+      10
     end
 
   end
@@ -312,10 +321,13 @@ describe 'Tests de MultiMethods' do
       self.uber_ataca_a(soldado)
     end
 
-
     partial_def :ataca_a, [Soldado, String] do |soldado, mensaje|
       base.ataca_a(soldado)
       "El soldado fue atacado levemente como si lo ataco un tanque, #{mensaje}"
+    end
+
+    partial_def :cantidad_soldados_que_puede_transportar, [Soldado] do |tripulante|
+      base_posta(Soldado) + 5
     end
 
   end
@@ -362,13 +374,36 @@ describe 'Tests de MultiMethods' do
     expect(soldado.vida).to eq(0)
   end
 
-  it 'Metodo parcial funciona con super' do
+  it 'Metodo parcial funciona con base' do
     soldado = Soldado.new
     panzer = Panzer.new()
     mensaje_amenazante = panzer.ataca_a(soldado, "la proxima esta caput")
 
     expect(mensaje_amenazante).to eq("El soldado fue atacado levemente como si lo ataco un tanque, la proxima esta caput")
     expect(soldado.vida).to eq(60)
+  end
+
+  it 'Metodo parcial funciona con base_posta' do
+    soldado = Soldado.new
+    panzer = Panzer.new()
+    expect(panzer.cantidad_soldados_que_puede_transportar(soldado)).to eq(15)
+  end
+
+  it 'Probando respond_to?' do
+    class A
+      partial_def :concat, [String, Integer] do |s1,n|
+        s1 * n
+      end
+
+      partial_def :concat, [Object, Object] do |o1, o2|
+        "Objetos concatenados"
+      end
+    end
+
+    expect(A.new.class.respond_to?(:concat)).to be(true)
+    expect(A.new.class.respond_to?(:to_s)).to be(true)
+    expect(A.new.class.respond_to?(:concat,false,[String, Integer])).to be (true)
+    expect(A.new.class.respond_to?(:concat,false,[String, Integer,String])).to be (false)
   end
 
 end
