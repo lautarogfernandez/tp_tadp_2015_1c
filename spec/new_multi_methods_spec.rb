@@ -6,7 +6,7 @@ describe 'Tests de MultiMethods' do
 
   #me parece que hay que incluir el modulo en la clase CLASS
   class A
-    include MultiMethods
+    #include MultiMethods
   end
 
   class Guerrero
@@ -252,8 +252,8 @@ describe 'Tests de MultiMethods' do
     expect(K.new.respond_to?(:to_s)).to be (true)# true, define el método normalmente
     expect(K.new.respond_to?(:concat, false, [String,String])).to be (true)# true, los tipos coinciden
     expect(K.new.respond_to?(:concat, false, [Integer,A])).to be (true)# true, matchea con [Object, Object]
-    expect(K.new.respond_to?(:to_s, false, [String])).to be (true) # false, no es un multimethod
-    expect(K.new.respond_to?(:concat, false, [String,String,String])).to be (true) # false, los tipos no coinciden)
+    expect(K.new.respond_to?(:to_s, false, [String])).to be (false) # false, no es un multimethod
+    expect(K.new.respond_to?(:concat, false, [String,String,String])).to be (false) # false, los tipos no coinciden)
   end
 
   class Soldado
@@ -352,7 +352,7 @@ describe 'Tests de MultiMethods' do
   end
 
   it 'Metodo parcial complementa un multimehod heredado' do
-    expect(Panzer.new().class.obtener_definiciones_parciales_aplicables_a_clase_actual(:ataca_a).keys.to_s).to eq("[[Tanque], [Soldado], [Radar]]")
+    expect(Panzer.new().class.obtener_definiciones_parciales_aplicables_a_clase_actual(:ataca_a).keys.to_s).to eq("[[Tanque], [Soldado], [Radar], [Soldado, String]]")
   end
 
   it 'Subclase puede acceder a multimethod heredado' do
@@ -400,10 +400,19 @@ describe 'Tests de MultiMethods' do
       end
     end
 
-    expect(A.new.class.respond_to?(:concat)).to be(true)
-    expect(A.new.class.respond_to?(:to_s)).to be(true)
-    expect(A.new.class.respond_to?(:concat,false,[String, Integer])).to be (true)
-    expect(A.new.class.respond_to?(:concat,false,[String, Integer,String])).to be (false)
+    instancia_con_partial_def = A.new()
+
+    instancia_con_partial_def.partial_def :lala, [String] do |mensaje|
+      mensaje
+    end
+
+    expect(A.new.respond_to?(:concat)).to be(true)
+    expect(A.new.respond_to?(:to_s)).to be(true)
+    expect(A.new.respond_to?(:concat,false,[String, Integer])).to be (true)
+    expect(A.new.respond_to?(:concat,false,[String, Integer,String])).to be (false)
+    expect(instancia_con_partial_def.respond_to?(:lala)).to be (true)
+    expect(instancia_con_partial_def.respond_to?(:lala, false, [String])).to be (true)
+    expect(instancia_con_partial_def.respond_to?(:lala, false, [Integer])).to be (false)
   end
 
 end

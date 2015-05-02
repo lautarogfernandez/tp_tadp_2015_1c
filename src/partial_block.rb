@@ -17,10 +17,22 @@ class PartialBlock
 
   def matches(*argumentos)
     if coincide_aridad_entre_argumentos_y_parametros?(@lista_tipos_parametros,argumentos)
-      matchea = @lista_tipos_parametros.zip(argumentos).all? { |tipo_parametro, argumento| argumento.is_a? tipo_parametro }
+      matchea = @lista_tipos_parametros.zip(argumentos).all? do |tipo_parametro, argumento|
+        argumento.is_a? tipo_parametro
+      end
     end
     matchea || false
   end
+
+  def matches_tipos(lista_tipos)
+    if coincide_aridad_entre_argumentos_y_parametros?(@lista_tipos_parametros,lista_tipos)
+      matchea = @lista_tipos_parametros.zip(lista_tipos).all? do |tipo_parametro, tipo|
+        tipo.ancestors.include?(tipo_parametro)
+      end
+    end
+    matchea || false
+  end
+
 
   def call(*argumentos)
     if(self.matches(*argumentos))

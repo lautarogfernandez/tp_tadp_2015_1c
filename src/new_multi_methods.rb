@@ -67,7 +67,12 @@ module MultiMethods
   end
 
   def obtener_multimethods_en_esta_clase(nombre_metodo)
-    multimetodo(nombre_metodo).mapa_definiciones()
+    if  tiene_multimethod?(nombre_metodo)
+      mapa_definiciones = multimetodo(nombre_metodo).mapa_definiciones()
+    else
+      mapa_definiciones = {}
+    end
+    mapa_definiciones
   end
 
   def tiene_multimethod?(nombre_metodo)
@@ -127,17 +132,6 @@ end
 
 class Module
   include MultiMethods
-
-  # def respond_to?(*argv)
-  #   responde=false
-  #
-  #   if argv.length.eql? 1
-  #     responde= super.respond_to?(argv[0]) || self.tiene_multimethod?(argv[0])
-  #   else
-  #     responde= obtener_definiciones_parciales_aplicables_a_clase_actual(argv[0]).any?  { |lista_parametros, partial_block| partial_block.matches(*argv[2])}
-  #   end
-  #   responde
-  # end
 end
 
 
@@ -186,6 +180,21 @@ class Object
 
   def partial_def (nombre,lista_parametros,&bloque)
     self.singleton_class.partial_def(nombre,lista_parametros,&bloque)
+  end
+
+  alias_method :respond_to_original?, :respond_to?
+
+  def respond_to?(*argv)
+    responde=false
+
+    if((argv.length.eql? 1) || (argv.length.eql? 2))
+      responde= self.respond_to_original?(*argv) # TODO con el super(*args) que onda??
+    else
+      responde = self.singleton_class.obtener_definiciones_parciales_aplicables_a_clase_actual(argv[0]).any?  do |lista_parametros, partial_block|
+        partial_block.matches_tipos(argv[2])
+      end
+    end
+    responde
   end
 
 end
