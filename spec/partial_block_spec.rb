@@ -65,11 +65,24 @@ describe 'Tests de PartialBlock' do
   end
 
   it 'Matches devuelve true cuando se pasan subclases de los parametros.' do
-    helloBlock = PartialBlock.new([String]) do |who|
-      "Hello #{who}"
+    module Mod_B
+      def mostrar
+        "a"
+      end
     end
 
-    expect(helloBlock.matches("a")).to be (true)
+    clase_b = class Clas_B
+      include Mod_B
+    end
+
+    helloBlock = PartialBlock.new([Clas_B, Mod_B]) do |arg1, arg2|
+      arg1.mostrar
+    end
+
+    instancia_b = clase_b.new()
+
+    expect(helloBlock.matches(instancia_b, instancia_b)).to be (true)
+    expect(helloBlock.matches(instancia_b, "a")).to be (false)
   end
 
   it 'La cantidad de parametros y los tipos coinciden y call satisfactorio' do
@@ -97,7 +110,7 @@ describe 'Tests de PartialBlock' do
 
 
   it 'Se puede ejecutar un partial block con call usando argumentos que son subclases de los tipos' do
-    helloBlock = PartialBlock.new([Object, Object]) do |arg1, arg2|
+    helloBlock = PartialBlock.new([Object, Integer]) do |arg1, arg2|
       "Hello #{arg1} #{arg2.to_s}!!!"
     end
 
@@ -105,7 +118,26 @@ describe 'Tests de PartialBlock' do
     expect(helloBlock.call("world", 2)).to eq ("Hello world 2!!!")
   end
 
-  #TODO hacer test para comprobar que se puedan usar modulos en la firma
+  it 'Se puede ejecutar un partial block con call usando argumentos que son submodulos de los tipos' do
+    module Mod_A
+      def mostrar
+        "a"
+      end
+    end
+
+    clase_a = class Clas_A
+      include Mod_A
+    end
+
+    helloBlock = PartialBlock.new([Clas_A, Mod_A]) do |arg1, arg2|
+      arg1.mostrar
+    end
+
+    instancia_a = clase_a.new()
+
+    expect(helloBlock.matches(instancia_a, instancia_a)).to be (true)
+    expect(helloBlock.call(instancia_a, instancia_a)).to eq ("a")
+  end
 
   it 'Ejecutar un partial block con call pasandole los argumentos incorrectos lanza un Argumment Exception' do
     helloBlock = PartialBlock.new([String]) do |who|
