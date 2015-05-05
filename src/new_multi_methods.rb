@@ -204,7 +204,7 @@ class Object
 
       #instancia.instance_exec *lista_de_argumentos_del_multi_method, &definiciones_parciales[lista_de_tipos_del_multi_method].bloque
     else
-      raise ArgumentError, 'Ningun partial method fue encontrado con esa lista de tipos referida en la key base'
+      raise ArgumentError, "Ningun partial method fue encontrado con la lista de tipos <#{lista_de_tipos_del_multi_method}> referida en la key base"
     end
 
   end

@@ -7,6 +7,53 @@ describe 'Tests de MultiMethods' do
   context "4ª Punto - Base" do
 
     before(:each) do
+
+      class M
+        partial_def :m, [Object] do |o|
+          "A>m"
+        end
+        partial_def :m_sin_parametros, [] do
+          "Primero m_sin_parametros de M"
+        end
+      end
+      class N < M
+        partial_def :m, [Integer] do |i|
+          base.m([Numeric], i) + " => B>m_integer(#{i})"
+        end
+        partial_def :m, [Numeric] do |n|
+          base.m([Object], n) + " => B>m_numeric"
+        end
+
+        partial_def :m_sin_parametros, [Numeric] do |n|
+          base.m_sin_parametros([]) + " => m_sin_parametros de N recibe #{n}"
+        end
+      end
+
+    end
+
+    it 'Prueba base con el ejemplo del TP' do
+      expect(N.new.m(1)).to eq("A>m => B>m_numeric => B>m_integer(1)")
+    end
+
+    it 'Prueba base usando un tipo que no existe tal cual en el multimethod' do
+      class N < M
+        partial_def :m, [String] do |i|
+          base.m([Fixnum], 2) + " => B>m_integer(#{i})"
+        end
+      end
+
+      expect{N.new.m("lala")}.to raise_error(ArgumentError, 'Ningun partial method fue encontrado con la lista de tipos <[Fixnum]> referida en la key base')
+    end
+
+    it 'Prueba base usando un metodo sin parametros' do
+      expect(N.new.m_sin_parametros(3)).to eq("Primero m_sin_parametros de M => m_sin_parametros de N recibe 3")
+    end
+
+  end
+
+  context "5ª Punto - Base como se usa Super" do
+
+    before(:each) do
       class Soldado
 
         attr_accessor :vida
@@ -85,7 +132,7 @@ describe 'Tests de MultiMethods' do
         end
 
         partial_def :ataca_a, [Soldado, String] do |soldado, mensaje|
-          base.ataca_a(soldado)
+          base.ataca_a([Soldado], soldado)
           "El soldado fue atacado levemente como si lo ataco un tanque, #{mensaje}"
         end
 
@@ -95,54 +142,36 @@ describe 'Tests de MultiMethods' do
 
       end
 
+      class PanzerTuneado < Tanque
+
+        partial_def :cantidad_soldados_que_puede_transportar, [Soldado] do |tripulante|
+          base_posta(tripulante) + 20
+        end
+
+      end
+
     end
 
-    it 'Metodo parcial funciona con base' do
+    it 'Metodo parcial sigue funcionando con base del punto 4' do
       soldado = Soldado.new
       panzer = Panzer.new()
       mensaje_amenazante = panzer.ataca_a(soldado, "la proxima esta caput")
 
       expect(mensaje_amenazante).to eq("El soldado fue atacado levemente como si lo ataco un tanque, la proxima esta caput")
-      expect(soldado.vida).to eq(60)
+      expect(soldado.vida).to eq(50)
     end
-
-    it 'Prueba base con el ejemplo del TP' do
-      class M
-        partial_def :m, [Object] do |o|
-          "A>m"
-        end
-      end
-      class N < M
-        partial_def :m, [Integer] do |i|
-          base.m([Numeric], i) + " => B>m_integer(#{i})"
-        end
-        partial_def :m, [Numeric] do |n|
-          base.m([Object], n) + " => B>m_numeric"
-        end
-      end
-
-      expect(N.new.m(1)).to eq("A>m => B>m_numeric => B>m_integer(1)")
-    end
-
-    it 'Prueba base usando un tipo que no existe tal cual en el multimethod' do
-      class N < M
-        partial_def :m, [String] do |i|
-          base.m([Fixnum], 2) + " => B>m_integer(#{i})"
-        end
-      end
-
-      expect{N.new.m("lala")}.to raise_error(ArgumentError, 'Ningun partial method fue encontrado con esa lista de tipos referida en la key base')
-    end
-
-  end
-
-  context "5ª Punto - Base como se usa Super" do
 
     it 'Metodo parcial funciona con base_posta' do
       soldado = Soldado.new
       panzer = Panzer.new()
       expect(panzer.cantidad_soldados_que_puede_transportar(soldado)).to eq(15)
     end
+
+      it 'Metodo parcial funciona con base_posta con invocaciones anidadas' do
+        soldado = Soldado.new
+        panzer = PanzerTuneado.new()
+        expect(panzer.cantidad_soldados_que_puede_transportar(soldado)).to eq(35)
+      end
 
   end
 
