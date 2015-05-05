@@ -141,6 +141,23 @@ class Base
   def initialize(selfie)
     @selfie = selfie
   end
+
+  def ejecutar_metodo_con_base(metodo, lista_de_tipos_del_multi_method, lista_de_argumentos_del_multi_method)
+
+    instancia = @selfie
+
+    definiciones_parciales = obtener_definiciones_parciales_aplicables_a_instancia(instancia, metodo)
+
+    if definiciones_parciales.has_key?(lista_de_tipos_del_multi_method)
+      bloque_parcial = definiciones_parciales[lista_de_tipos_del_multi_method]
+      bloque_parcial.call_with_binding(*lista_de_argumentos_del_multi_method, instancia)
+
+      #instancia.instance_exec *lista_de_argumentos_del_multi_method, &definiciones_parciales[lista_de_tipos_del_multi_method].bloque
+    else
+      raise ArgumentError, "Ningun partial method fue encontrado con la lista de tipos <#{lista_de_tipos_del_multi_method}> referida en la key base"
+    end
+
+  end
 end
 
 class Object
@@ -177,9 +194,8 @@ class Object
 
       lista_de_tipos_del_multi_method = args.delete_at(0)
       lista_de_argumentos_del_multi_method = args
-      instancia = self.selfie
 
-      ejecutar_metodo_con_base(instancia, metodo, lista_de_tipos_del_multi_method, lista_de_argumentos_del_multi_method)
+      self.ejecutar_metodo_con_base(metodo, lista_de_tipos_del_multi_method, lista_de_argumentos_del_multi_method)
 
     elsif(metodo.equal?(:base))
       Base.new(self)
@@ -190,21 +206,6 @@ class Object
 
     else
       super(metodo, *args)
-    end
-
-  end
-
-  def ejecutar_metodo_con_base(instancia, metodo, lista_de_tipos_del_multi_method, lista_de_argumentos_del_multi_method)
-
-    definiciones_parciales = obtener_definiciones_parciales_aplicables_a_instancia(instancia, metodo)
-
-    if definiciones_parciales.has_key?(lista_de_tipos_del_multi_method)
-      bloque_parcial = definiciones_parciales[lista_de_tipos_del_multi_method]
-      bloque_parcial.call_with_binding(*lista_de_argumentos_del_multi_method, instancia)
-
-      #instancia.instance_exec *lista_de_argumentos_del_multi_method, &definiciones_parciales[lista_de_tipos_del_multi_method].bloque
-    else
-      raise ArgumentError, "Ningun partial method fue encontrado con la lista de tipos <#{lista_de_tipos_del_multi_method}> referida en la key base"
     end
 
   end
