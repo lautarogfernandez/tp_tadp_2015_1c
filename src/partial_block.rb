@@ -1,3 +1,9 @@
+class Object
+  def distancia_parametro_parcial(tipo_parametro)
+    self.class.ancestors.index(tipo_parametro)
+  end
+end
+
 class PartialBlock
 
   attr_accessor :lista_tipos_parametros, :bloque
@@ -47,6 +53,10 @@ class PartialBlock
     # El tema uqe para solucionarlo habria que usar el matches adentro dle nuevo call_with_binding (llamandose 2 veces al matches)
 
     new_self.instance_exec *argumentos, &bloque
+  end
+
+  def distancia_parametro_total(argumentos)
+    self.lista_tipos_parametros.collect { |tipo_parametro| argumentos[self.lista_tipos_parametros.index(tipo_parametro)].distancia_parametro_parcial(tipo_parametro) * (self.lista_tipos_parametros.index(tipo_parametro)+1) }.reduce(0, :+)
   end
 
 end

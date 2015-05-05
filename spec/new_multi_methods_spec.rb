@@ -218,8 +218,8 @@ describe 'Tests de MultiMethods' do
     end
 
     it 'Prueba del calculo de la distancia parcial' do
-      expect(A.distancia_parametro_parcial(3,Numeric)).to eq(2)
-      expect(A.distancia_parametro_parcial(3.0,Numeric)).to eq(1)
+      expect(3.distancia_parametro_parcial(Numeric)).to eq(2)
+      expect((3.0).distancia_parametro_parcial(Numeric)).to eq(1)
     end
 
     it 'Prueba del calculo de la distancia total' do
@@ -229,10 +229,15 @@ describe 'Tests de MultiMethods' do
       parametros_1=[3.0, 3]
       parametros_2=[3, 3]
       parametros_3=[3,3,3,3,3,3]
-      expect(A.distancia_parametro_total(parametros_1,tipos_1)).to eq(3)
-      expect(A.distancia_parametro_total(parametros_2,tipos_1)).to eq(4)
-      expect(A.distancia_parametro_total(parametros_2,tipos_2)).to eq(2)
-      expect(A.distancia_parametro_total(parametros_3,tipos_3)).to eq(6)
+      bloque_parcial_1=PartialBlock.new(tipos_1) {|a,b|}
+      bloque_parcial_2=PartialBlock.new(tipos_1) {|a,b|}
+      bloque_parcial_3=PartialBlock.new(tipos_2) {|a,b|}
+      bloque_parcial_4=PartialBlock.new(tipos_3) {|a,b,c,d,e,f|}
+
+      expect(bloque_parcial_1.distancia_parametro_total(parametros_1)).to eq(3)
+      expect(bloque_parcial_2.distancia_parametro_total(parametros_2)).to eq(4)
+      expect(bloque_parcial_3.distancia_parametro_total(parametros_2)).to eq(2)
+      expect(bloque_parcial_4.distancia_parametro_total(parametros_3)).to eq(6)
     end
 
     it 'Probando respond_to?' do
@@ -555,6 +560,24 @@ describe 'Tests de MultiMethods' do
         end
       end
 
+      class W < Z
+        partial_def :n, [Object] do |o|
+          "NNN"
+        end
+
+        partial_def :o, [Object] do |o|
+          "OOO"
+        end
+
+        partial_def :o, [Integer] do |number|
+          "O" * number
+        end
+      end
+
+    end
+
+    it 'Metodo Multimethods agrega los multimetodos heredados' do  #este puede no ir dependiendo de lo que diga Pablo
+      expect(W.multimethods).to eq([:m,:n,:o])
     end
 
     it 'Subclase puede acceder a multimethod heredado' do

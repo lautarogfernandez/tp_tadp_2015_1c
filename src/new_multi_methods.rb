@@ -31,7 +31,7 @@ end
 
 module MultiMethods
 
-  attr_accessor :multimethodos
+  attr_accessor :multimetodos
 
   def initialize()
     @multimetodos=Array.new
@@ -62,14 +62,6 @@ module MultiMethods
     end
   end
 
-  def distancia_parametro_parcial(parametro,tipo_parametro)
-    parametro.class.ancestors.index(tipo_parametro)
-  end
-
-  def distancia_parametro_total(lista_parametros,lista_tipos_parametro)
-    lista_parametros.collect { |parametro| distancia_parametro_parcial(parametro,lista_tipos_parametro[lista_parametros.index(parametro)])*(lista_parametros.index(parametro)+1) }.reduce(0, :+)
-  end
-
   def obtener_multimethods_en_esta_clase(nombre_metodo)
     if  tiene_multimethod?(nombre_metodo)
       mapa_definiciones = multimetodo(nombre_metodo).mapa_definiciones()
@@ -95,7 +87,7 @@ module MultiMethods
     if(todos_los_que_matchean.empty?)
       raise(StandardError)
     else
-      multimethod_a_ejecutar =todos_los_que_matchean.sort_by{|tipos_params_1,partial_block_1|(-1)* distancia_parametro_total(argumentos,tipos_params_1)}.reverse[0][1]
+      multimethod_a_ejecutar =todos_los_que_matchean.sort_by{|tipos_params_1,partial_block_1|(-1)* partial_block_1.distancia_parametro_total(argumentos)}.reverse[0][1]
       multimethod_a_ejecutar
     end
   end
@@ -114,7 +106,7 @@ module MultiMethods
   end
 
   def multimethods()
-    self.multimetodos.collect{|multimetodo|multimetodo.simbolo}
+    self.multimetodos.collect{|multimetodo|multimetodo.simbolo}.uniq
   end
 
   def multimethod(nombre_metodo)
