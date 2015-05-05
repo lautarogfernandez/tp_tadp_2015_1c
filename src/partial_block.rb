@@ -43,6 +43,9 @@ class PartialBlock
   end
 
   def call_with_binding(*argumentos, new_self)
+    # no me gusta de usar call_with_binding que abre la posibilidad de ejecutar el partial block sin el mathchs.
+    # El tema uqe para solucionarlo habria que usar el matches adentro dle nuevo call_with_binding (llamandose 2 veces al matches)
+
     new_self.instance_exec *argumentos, &bloque
   end
 

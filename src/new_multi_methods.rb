@@ -45,6 +45,10 @@ module MultiMethods
     multimetodos.any?{|multimetodo|multimetodo.sos?(nombre_metodo)}
   end
 
+  def tiene_multimethod?(nombre_metodo)
+    multimetodos.any?{|multimetodo|multimetodo.sos?(nombre_metodo)}
+  end
+
   def multimetodo(nombre_metodo)
     multimetodos.select{|multimetodo|multimetodo.sos?(nombre_metodo)}.first()
   end
@@ -73,10 +77,6 @@ module MultiMethods
       mapa_definiciones = {}
     end
     mapa_definiciones
-  end
-
-  def tiene_multimethod?(nombre_metodo)
-    multimetodos.any?{|multimetodo|multimetodo.sos?(nombre_metodo)}
   end
 
   def obtener_definiciones_parciales_aplicables_a_clase_actual(nombre_metodo, definiciones_parciales = {})
@@ -108,9 +108,6 @@ module MultiMethods
       class_up = self
       self.send(:define_method,nombre) do |*args|
          partial_block = class_up.obtener_multimethod_a_ejecutar(__method__, args)
-         #self.instance_exec *args, &partial_block.bloque
-         # no me gusta de esta opcion que abre la posibilidad de ejecutar el partial block sin el mathchs.
-         # El tema uqe para solucionarlo habria que usar el matches adentro dle nuevo call_with_binding (llamandose 2 veces al matches)
          partial_block.call_with_binding(*args, self)
       end
     end
@@ -151,8 +148,6 @@ class Base
     if definiciones_parciales.has_key?(lista_de_tipos_del_multi_method)
       bloque_parcial = definiciones_parciales[lista_de_tipos_del_multi_method]
       bloque_parcial.call_with_binding(*lista_de_argumentos_del_multi_method, instancia)
-
-      #instancia.instance_exec *lista_de_argumentos_del_multi_method, &definiciones_parciales[lista_de_tipos_del_multi_method].bloque
     else
       raise ArgumentError, "Ningun partial method fue encontrado con la lista de tipos <#{lista_de_tipos_del_multi_method}> referida en la key base"
     end
@@ -233,7 +228,6 @@ class Object
     metodo_obtenido = line_with_method_name.split(',')[0].split(' ')[1].gsub!(':','').to_sym
     bloque_parcial = instancia.class.ancestors[1].obtener_multimethod_a_ejecutar(metodo_obtenido, args)
 
-    #instancia.instance_exec *args, &bloque_parcial.bloque
     bloque_parcial.call_with_binding(*args, instancia)
   end
 
