@@ -192,17 +192,24 @@ class Object
   def method_missing(metodo, *args)
     if(self.is_a?(Base))
 
+      instancia_de_base = self
+
       lista_de_tipos_del_multi_method = args.delete_at(0)
       lista_de_argumentos_del_multi_method = args
 
-      self.ejecutar_metodo_con_base(metodo, lista_de_tipos_del_multi_method, lista_de_argumentos_del_multi_method)
+      instancia_de_base.ejecutar_metodo_con_base(metodo, lista_de_tipos_del_multi_method, lista_de_argumentos_del_multi_method)
 
     elsif(metodo.equal?(:base))
-      Base.new(self)
+
+      instancia_cualquiera = self
+
+      Base.new(instancia_cualquiera)
 
     elsif(metodo.equal?(:base_posta))
 
-      ejecutar_base_posta_obteniendo_metodo_por_file(self, args)
+      instancia_cualquiera = self
+
+      ejecutar_base_posta_obteniendo_metodo_por_file(instancia_cualquiera, args)
 
     else
       super(metodo, *args)
