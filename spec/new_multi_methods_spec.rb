@@ -4,7 +4,7 @@ require_relative '../src/partial_block'
 
 describe 'Tests de MultiMethods' do
 
-  context "4ª Punto" do
+  context "4ª Punto - Base" do
 
     before(:each) do
       class Soldado
@@ -124,6 +124,20 @@ describe 'Tests de MultiMethods' do
       expect(N.new.m(1)).to eq("A>m => B>m_numeric => B>m_integer(1)")
     end
 
+    it 'Prueba base usando un tipo que no existe tal cual en el multimethod' do
+      class N < M
+        partial_def :m, [String] do |i|
+          base.m([Fixnum], 2) + " => B>m_integer(#{i})"
+        end
+      end
+
+      expect{N.new.m("lala")}.to raise_error(ArgumentError, 'Ningun partial method fue encontrado con esa lista de tipos referida en la key base')
+    end
+
+  end
+
+  context "5ª Punto - Base como se usa Super" do
+
     it 'Metodo parcial funciona con base_posta' do
       soldado = Soldado.new
       panzer = Panzer.new()
@@ -132,7 +146,7 @@ describe 'Tests de MultiMethods' do
 
   end
 
-  context "2ª Punto" do
+  context "2ª Punto - Multimethods" do
 
     before(:each)do
       class A
@@ -286,6 +300,17 @@ describe 'Tests de MultiMethods' do
       expect(saludador.saludar("Ale")).to eq ("Hola Ale")
     end
 
+    it 'Devuelve error si se no coincide el tipo de argumento' do
+      saludador = Saludador.new()
+      expect{saludador.saludar(5)}.to raise_error (StandardError)
+    end
+
+    it 'Devuelve error si se no coincide la cantidad de argumentos' do
+      saludador = Saludador.new()
+      expect{saludador.saludar("asd",5,123)}.to raise_error (StandardError)
+    end
+
+
     it 'Definir multimetodo en clase con argumentos que son subclases del tipo de parametro (FixNum e Integer)' do
       saludador = Saludador.new()
       expect(saludador.saludar("Ale", 3)).to eq ("Hola Ale Hola Ale Hola Ale ")
@@ -357,8 +382,6 @@ describe 'Tests de MultiMethods' do
       expect(saludador.saludar("Pepe")).to eq ("Como va Pepe?")
     end
 
-
-
     it 'Pruebo que seleccione el metodo correcto' do
       class Saluda
         partial_def :saludar, [String] do |nombre|
@@ -392,12 +415,9 @@ describe 'Tests de MultiMethods' do
       expect(Concatenador.new.concat(Object.new, 3)).to eq("Objetos concatenados")
     end
 
-
-
-
   end
 
-  context "3ª Punto" do
+  context "3ª Punto - Herencia" do
 
     before(:each) do
       class Soldado

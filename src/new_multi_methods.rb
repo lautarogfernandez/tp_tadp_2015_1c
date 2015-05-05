@@ -108,10 +108,10 @@ module MultiMethods
       class_up = self
       self.send(:define_method,nombre) do |*args|
          partial_block = class_up.obtener_multimethod_a_ejecutar(__method__, args)
-         self.instance_exec *args, &partial_block.bloque
+         #self.instance_exec *args, &partial_block.bloque
          # no me gusta de esta opcion que abre la posibilidad de ejecutar el partial block sin el mathchs.
          # El tema uqe para solucionarlo habria que usar el matches adentro dle nuevo call_with_binding (llamandose 2 veces al matches)
-         # partial_block.call_with_binding(*args, self)
+         partial_block.call_with_binding(*args, self)
       end
     end
   end
@@ -145,39 +145,6 @@ end
 
 class Object
 
-  def method_missing(metodo, *args)
-    if(self.is_a?(Base))
-      bloque_parcial = self.selfie.class.ancestors[1].obtener_multimethod_a_ejecutar(metodo, args)
-      self.selfie.instance_exec *args, &bloque_parcial.bloque
-      #No se puede hacer algo asi??
-      #self.selfie.super(method)
-    elsif(metodo.equal?(:base))
-      Base.new(self)
-    elsif(metodo.equal?(:base_posta))
-       file_line= caller.select{|line| line.include?("block in <class:#{self.class}>")}.first.split(':')[0,2]
-       file_path = file_line[0]
-       file_line = file_line[1].to_i
-       #File.open file_line[0]
-
-       while file_line > 0
-         line_string = IO.readlines(file_path)[file_line]
-         if(line_string.include?("partial_def"))
-           line_with_method_name = line_string
-           break
-         end
-         file_line = file_line - 1
-       end
-       metodo_obtenido = line_with_method_name.split(',')[0].split(' ')[1].gsub!(':','').to_sym
-       bloque_parcial = self.class.ancestors[1].obtener_multimethod_a_ejecutar(metodo_obtenido, args)
-       self.instance_exec *args, &bloque_parcial.bloque
-
-    else
-      super(metodo, *args)
-    end
-
-  end
-
-
   def partial_def (nombre,lista_parametros,&bloque)
     self.singleton_class.partial_def(nombre,lista_parametros,&bloque)
   end
@@ -185,16 +152,81 @@ class Object
   alias_method :respond_to_original?, :respond_to?
 
   def respond_to?(*argv)
-    responde=false
+    responde = false
 
     if((argv.length.eql? 1) || (argv.length.eql? 2))
       responde= self.respond_to_original?(*argv) # TODO con el super(*args) que onda??
     else
-      responde = self.singleton_class.obtener_definiciones_parciales_aplicables_a_clase_actual(argv[0]).any?  do |lista_parametros, partial_block|
-        partial_block.matches_tipos(argv[2])
+      metodo = argv[0]
+      tipos_parametros = argv[2]
+
+      responde = obtener_definiciones_parciales_aplicables_a_instancia(self, metodo).any?  do |lista_parametros, partial_block|
+        partial_block.matches_tipos(tipos_parametros)
       end
     end
     responde
+  end
+
+  def obtener_definiciones_parciales_aplicables_a_instancia(instancia, metodo)
+    instancia.singleton_class.obtener_definiciones_parciales_aplicables_a_clase_actual(metodo)
+  end
+
+
+  def method_missing(metodo, *args)
+    if(self.is_a?(Base))
+
+      lista_de_tipos_del_multi_method = args.delete_at(0)
+      lista_de_argumentos_del_multi_method = args
+      instancia = self.selfie
+
+      ejecutar_metodo_con_base(instancia, metodo, lista_de_tipos_del_multi_method, lista_de_argumentos_del_multi_method)
+
+    elsif(metodo.equal?(:base))
+      Base.new(self)
+
+    elsif(metodo.equal?(:base_posta))
+
+      ejecutar_base_posta_obteniendo_metodo_por_file(self, args)
+
+    else
+      super(metodo, *args)
+    end
+
+  end
+
+  def ejecutar_metodo_con_base(instancia, metodo, lista_de_tipos_del_multi_method, lista_de_argumentos_del_multi_method)
+
+    definiciones_parciales = obtener_definiciones_parciales_aplicables_a_instancia(instancia, metodo)
+
+    if definiciones_parciales.has_key?(lista_de_tipos_del_multi_method)
+      bloque_parcial = definiciones_parciales[lista_de_tipos_del_multi_method]
+      bloque_parcial.call_with_binding(*lista_de_argumentos_del_multi_method, instancia)
+
+      #instancia.instance_exec *lista_de_argumentos_del_multi_method, &definiciones_parciales[lista_de_tipos_del_multi_method].bloque
+    else
+      raise ArgumentError, 'Ningun partial method fue encontrado con esa lista de tipos referida en la key base'
+    end
+
+  end
+
+  def ejecutar_base_posta_obteniendo_metodo_por_file(instancia, args)
+    file_line= caller.select{|line| line.include?("block in <class:#{instancia.class}>")}.first.split(':')[0,2]
+    file_path = file_line[0]
+    file_line = file_line[1].to_i
+
+    while file_line > 0
+      line_string = IO.readlines(file_path)[file_line]
+      if(line_string.include?("partial_def"))
+        line_with_method_name = line_string
+        break
+      end
+      file_line = file_line - 1
+    end
+    metodo_obtenido = line_with_method_name.split(',')[0].split(' ')[1].gsub!(':','').to_sym
+    bloque_parcial = instancia.class.ancestors[1].obtener_multimethod_a_ejecutar(metodo_obtenido, args)
+
+    #instancia.instance_exec *args, &bloque_parcial.bloque
+    bloque_parcial.call_with_binding(*args, instancia)
   end
 
 end
