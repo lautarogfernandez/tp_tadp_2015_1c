@@ -3,14 +3,6 @@ require_relative '../src/partial_block'
 
 describe 'Tests de PartialBlock' do
 
-  it 'La cantidad de parametros no coinciden con la cantidad del declarada en el bloque y lanza excepcion' do
-
-    expect{helloBlock = PartialBlock.new([Integer,String]) do |who|
-      "Hello #{who}" end
-    }.to raise_error(ArgumentError) #TODO 1 ver de crear una exception de negocio
-
-  end
-
   it 'La cantidad de parametros coinciden con la cantidad declarada en el bloque y se crea el partial block correctamente' do
     helloBlock = PartialBlock.new([Integer,String]) do |who, who2|
       "Hello #{who} #{who2}"
@@ -139,16 +131,34 @@ describe 'Tests de PartialBlock' do
     expect(helloBlock.call(instancia_a, instancia_a)).to eq ("a")
   end
 
+  it 'Crear un partial block pasandole los argumentos incorrectamente y lanza un Argumment Exception' do
+    error_creacion= "No coincide la aridad del bloque con la cantidad de parametros"
+
+    expect{
+        new_block_1 = PartialBlock.new([]) do |who|
+          "Hello #{who}"
+        end}.to raise_error(ArgumentError, error_creacion)
+    expect{
+        new_block_2 = PartialBlock.new([Integer,String]) do |who|
+          "Hello #{who}"
+        end}.to raise_error(ArgumentError, error_creacion)
+    expect{
+        new_block_3 = PartialBlock.new([Integer,String]) do |who, a, b,c|
+          "Hello #{who}"
+        end}.to raise_error(ArgumentError, error_creacion)
+    end
+
   it 'Ejecutar un partial block con call pasandole los argumentos incorrectos lanza un Argumment Exception' do
     helloBlock = PartialBlock.new([String]) do |who|
       "Hello #{who}"
     end
+    error_ejecucion="Los argumentos no coincide con el tipo requerido por el bloque"
 
-    expect{helloBlock.call()}.to raise_error (ArgumentError)
-    expect{helloBlock.call([])}.to raise_error (ArgumentError)
-    expect{helloBlock.call(1)}.to raise_error (ArgumentError)
-    expect{helloBlock.call(Object.new())}.to raise_error (ArgumentError)
-    expect{helloBlock.call("world!","world2")}.to raise_error (ArgumentError)
+    expect{helloBlock.call()}.to raise_error.with_message(error_ejecucion)
+    expect{helloBlock.call([])}.to raise_error.with_message(error_ejecucion)
+    expect{helloBlock.call(1)}.to raise_error.with_message(error_ejecucion)
+    expect{helloBlock.call(Object.new())}.to raise_error.with_message(error_ejecucion)
+    expect{helloBlock.call("world!","world2")}.to raise_error.with_message(error_ejecucion)
   end
 
 end

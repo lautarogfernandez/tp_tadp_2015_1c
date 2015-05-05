@@ -17,7 +17,7 @@ class PartialBlock
       @lista_tipos_parametros=lista_tipos_parametros
       @bloque=bloque
     else
-      raise(ArgumentError)#como hacemos? hacemos nosotros una excepcion o le pasamos por parametro un titulo y mensaje
+      raise ArgumentError, "No coincide la aridad del bloque con la cantidad de parametros"
     end
   end
 
@@ -44,7 +44,7 @@ class PartialBlock
     if(self.matches(*argumentos))
       self.bloque.call(*argumentos)
     else
-      raise(ArgumentError)#como hacemos? hacemos nosotros una excepcion o le pasamos por parametro un titulo y mensaje
+      raise ArgumentError, "Los argumentos no coincide con el tipo requerido por el bloque"
     end
   end
 

@@ -85,7 +85,7 @@ module MultiMethods
     definiciones_parciales = obtener_definiciones_parciales_aplicables_a_clase_actual(metodo_ejecutado)
     todos_los_que_matchean = definiciones_parciales.select { |lista_parametros, partial_block| partial_block.matches(*argumentos)}
     if(todos_los_que_matchean.empty?)
-      raise(StandardError)
+      raise StandardError,"No existe el multimetohd: <#{metodo_ejecutado}> con parametros <#{argumentos.collect { |argumento| argumento.class }}>  para <#{self.class}>"
     else
       multimethod_a_ejecutar =todos_los_que_matchean.sort_by{|tipos_params_1,partial_block_1|(-1)* partial_block_1.distancia_parametro_total(argumentos)}.reverse[0][1]
       multimethod_a_ejecutar

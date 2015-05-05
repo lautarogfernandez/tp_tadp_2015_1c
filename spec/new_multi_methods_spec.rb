@@ -336,6 +336,7 @@ describe 'Tests de MultiMethods' do
 
     it 'Devuelve error si se no coincide el tipo de argumento' do
       saludador = Saludador.new()
+      error_ejecucion="Los argumentos no coincide con el tipo requerido por el bloque"
       expect{saludador.saludar(5)}.to raise_error (StandardError)
     end
 
