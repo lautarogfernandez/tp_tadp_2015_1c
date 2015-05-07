@@ -543,7 +543,19 @@ describe 'Tests de MultiMethods' do
 
       end
 
-      class Y
+      class AA
+        partial_def :m, [String] do |s|
+          "metodo :m de AA"
+        end
+        partial_def :aa, [Numeric] do |n|
+          "metodo :aa de AA"
+        end
+        partial_def :mm, [Object] do |o|
+          "metodo :mm de AA"
+        end
+      end
+
+      class Y <AA
         partial_def :m, [String] do |s|
           "A>m #{s}"
         end
@@ -577,8 +589,9 @@ describe 'Tests de MultiMethods' do
 
     end
 
-    it 'Metodo Multimethods agrega los multimetodos heredados' do  #este puede no ir dependiendo de lo que diga Pablo
-      expect(W.multimethods).to eq([:m,:n,:o])
+    it 'Metodo Multimethods agrega los multimetodos heredados' do
+      (W.multimethods(false).should match_array([:o,:n]))
+      (W.multimethods(true)).should match_array([:m,:n,:o,:aa,:mm])
     end
 
     it 'Subclase puede acceder a multimethod heredado' do

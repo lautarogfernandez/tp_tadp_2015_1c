@@ -105,8 +105,12 @@ module MultiMethods
     end
   end
 
-  def multimethods()
-    self.multimetodos.collect{|multimetodo|multimetodo.simbolo}.uniq
+  def multimethods(ver_metodos_heredados=false)
+    if(ver_metodos_heredados)
+      ancestros=self.ancestors.collect{|ancestor|ancestor.multimetodos}.flatten().collect{|multimetodo|multimetodo.simbolo}.uniq
+    else
+      self.multimetodos.collect{|multimetodo|multimetodo.simbolo}.uniq
+    end
   end
 
   def multimethod(nombre_metodo)
