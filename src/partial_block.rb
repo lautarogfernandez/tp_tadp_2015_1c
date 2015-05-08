@@ -8,13 +8,13 @@ class PartialBlock
 
   attr_accessor :lista_tipos_parametros, :bloque
 
-  def coincide_aridad_entre_argumentos_y_parametros?(lista_tipos_parametros, argumentos)
-    lista_tipos_parametros.size==argumentos.size
+  def coincide_aridad_entre_argumentos_y_parametros?( argumentos)
+    self.lista_tipos_parametros.size==argumentos.size
   end
 
   def initialize (lista_tipos_parametros,&bloque)
-    if(coincide_aridad_entre_argumentos_y_parametros?(lista_tipos_parametros, bloque.parameters))
-      @lista_tipos_parametros=lista_tipos_parametros
+    @lista_tipos_parametros=lista_tipos_parametros
+    if(self.coincide_aridad_entre_argumentos_y_parametros?(bloque.parameters))
       @bloque=bloque
     else
       raise ArgumentError, "No coincide la aridad del bloque con la cantidad de parametros"
@@ -22,8 +22,8 @@ class PartialBlock
   end
 
   def matches(*argumentos)
-    if coincide_aridad_entre_argumentos_y_parametros?(@lista_tipos_parametros,argumentos)
-      matchea = @lista_tipos_parametros.zip(argumentos).all? do |tipo_parametro, argumento|
+    if self.coincide_aridad_entre_argumentos_y_parametros?(argumentos)
+      matchea = self.lista_tipos_parametros.zip(argumentos).all? do |tipo_parametro, argumento|
         argumento.is_a? tipo_parametro
       end
     end
@@ -31,8 +31,8 @@ class PartialBlock
   end
 
   def matches_tipos(lista_tipos)
-    if coincide_aridad_entre_argumentos_y_parametros?(@lista_tipos_parametros,lista_tipos)
-      matchea = @lista_tipos_parametros.zip(lista_tipos).all? do |tipo_parametro, tipo|
+    if self.coincide_aridad_entre_argumentos_y_parametros?(lista_tipos)
+      matchea =  self.lista_tipos_parametros.zip(lista_tipos).all? do |tipo_parametro, tipo|
         tipo.ancestors.include?(tipo_parametro)
       end
     end
