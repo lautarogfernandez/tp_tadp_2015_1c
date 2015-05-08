@@ -45,10 +45,6 @@ module MultiMethods
     multimetodos.any?{|multimetodo|multimetodo.sos?(nombre_metodo)}
   end
 
-  def tiene_multimethod?(nombre_metodo)
-    multimetodos.any?{|multimetodo|multimetodo.sos?(nombre_metodo)}
-  end
-
   def multimetodo(nombre_metodo)
     multimetodos.select{|multimetodo|multimetodo.sos?(nombre_metodo)}.first()
   end
@@ -81,15 +77,31 @@ module MultiMethods
     resultado
   end
 
-  def obtener_multimethod_a_ejecutar(metodo_ejecutado, argumentos)
-    definiciones_parciales = obtener_definiciones_parciales_aplicables_a_clase_actual(metodo_ejecutado)
-    todos_los_que_matchean = definiciones_parciales.select { |lista_parametros, partial_block| partial_block.matches(*argumentos)}
+  def valido_si_existe_algun_multimethod_que_matchee(todos_los_que_matchean)
     if(todos_los_que_matchean.empty?)
       raise StandardError,"No existe el multimetohd: <#{metodo_ejecutado}> con parametros <#{argumentos.collect { |argumento| argumento.class }}>  para <#{self.class}>"
-    else
-      multimethod_a_ejecutar =todos_los_que_matchean.sort_by{|tipos_params_1,partial_block_1|(-1)* partial_block_1.distancia_parametro_total(argumentos)}.reverse[0][1]
-      multimethod_a_ejecutar
     end
+  end
+
+  def obtener_multimethod_a_ejecutar(metodo_ejecutado, argumentos, lista_tipos_llamado_base_posta = nil)
+    definiciones_parciales = obtener_definiciones_parciales_aplicables_a_clase_actual(metodo_ejecutado)
+    todos_los_que_matchean = definiciones_parciales.select { |lista_parametros, partial_block| partial_block.matches(*argumentos)}
+
+    valido_si_existe_algun_multimethod_que_matchee(todos_los_que_matchean)
+
+    definiciones_que_matchean_ordenadas = todos_los_que_matchean.sort_by{|tipos_params_1,partial_block_1| partial_block_1.distancia_parametro_total(argumentos)}
+
+    if lista_tipos_llamado_base_posta.nil?
+      multimethod_a_ejecutar = definiciones_que_matchean_ordenadas.first[1]
+    else
+      definiciones_correspondientes_a_base = definiciones_que_matchean_ordenadas.select do
+          |definicion| definicion[1].matches_tipos(lista_tipos_llamado_base_posta)
+        end
+
+      raise ArgumentError, "No se puede aplicar base_posta porque es el partial method mas alto de la jerarquia" if definiciones_correspondientes_a_base.size < 2
+      multimethod_a_ejecutar = definiciones_correspondientes_a_base[1][1]
+    end
+
   end
 
   def partial_def (nombre,lista_parametros,&bloque)
@@ -99,7 +111,11 @@ module MultiMethods
     if(!self.respond_to?(nombre))
       class_up = self
       self.send(:define_method,nombre) do |*args|
+
          partial_block = class_up.obtener_multimethod_a_ejecutar(__method__, args)
+
+         agregar_al_stack_llamados_a_metodos(nombre, partial_block.lista_tipos_parametros, args)
+
          partial_block.call_with_binding(*args, self)
       end
     end
@@ -151,7 +167,29 @@ class Base
   end
 end
 
+class MethodCall
+  attr_accessor :method_called, :tipos_parametros, :args
+
+  def initialize(method_called, tipos, args)
+    @method_called = method_called
+    @tipos_parametros = tipos
+    @args = args
+  end
+
+end
+
+
 class Object
+
+  :stack_llamados_a_metodos
+
+  def stack_llamados_a_metodos
+    @stack_llamados_a_metodos = @stack_llamados_a_metodos || []
+  end
+
+  def agregar_al_stack_llamados_a_metodos(nombre_metodo, tipos_parametro, args)
+    stack_llamados_a_metodos.push( MethodCall.new(nombre_metodo, tipos_parametro, args) )
+  end
 
   def partial_def (nombre,lista_parametros,&bloque)
     self.singleton_class.partial_def(nombre,lista_parametros,&bloque)
@@ -179,7 +217,6 @@ class Object
     self.singleton_class.obtener_definiciones_parciales_aplicables_a_clase_actual(metodo)
   end
 
-
   def method_missing(metodo, *args)
     if(metodo.equal?(:base))
 
@@ -199,8 +236,15 @@ class Object
     elsif(metodo.equal?(:base_posta))
 
       instancia_cualquiera = self
+      llamado_a_metodo = @stack_llamados_a_metodos.pop
 
-      ejecutar_base_posta_obteniendo_metodo_por_file(instancia_cualquiera, args)
+      bloque_parcial = instancia_cualquiera.singleton_class.obtener_multimethod_a_ejecutar(llamado_a_metodo.method_called, args, llamado_a_metodo.tipos_parametros)
+
+      agregar_al_stack_llamados_a_metodos(llamado_a_metodo.method_called, bloque_parcial.lista_tipos_parametros, args)
+
+      bloque_parcial.call_with_binding(*args, instancia_cualquiera)
+
+      #ejecutar_base_posta_obteniendo_metodo_por_file(instancia_cualquiera, args)
 
     else
       super(metodo, *args)

@@ -150,7 +150,31 @@ describe 'Tests de MultiMethods' do
 
       end
 
+
+      class A
+        partial_def :m, [Object] do |o|
+          "A>m"
+        end
+      end
+
+      class B < A
+        partial_def :m, [Integer] do |i|
+          base_posta(i) + " => B>m_integer(#{i})"
+        end
+
+        partial_def :m, [Numeric] do |n|
+          base_posta(n) + " => B>m_numeric"
+        end
+
+      end
+
     end
+
+
+    it 'Test base_poosta anidados (ejemplo TP)' do
+      expect(B.new.m(1)).to eq("A>m => B>m_numeric => B>m_integer(1)")
+    end
+
 
     it 'Metodo parcial sigue funcionando con base del punto 4' do
       soldado = Soldado.new
@@ -161,17 +185,17 @@ describe 'Tests de MultiMethods' do
       expect(soldado.vida).to eq(50)
     end
 
-    it 'Metodo parcial funciona con base_posta' do
-      soldado = Soldado.new
-      panzer = Panzer.new()
-      expect(panzer.cantidad_soldados_que_puede_transportar(soldado)).to eq(15)
-    end
-
-      it 'Metodo parcial funciona con base_posta con invocaciones anidadas' do
-        soldado = Soldado.new
-        panzer = PanzerTuneado.new()
-        expect(panzer.cantidad_soldados_que_puede_transportar(soldado)).to eq(35)
-      end
+    # it 'Metodo parcial funciona con base_posta' do
+    #   soldado = Soldado.new
+    #   panzer = Panzer.new()
+    #   expect(panzer.cantidad_soldados_que_puede_transportar(soldado)).to eq(15)
+    # end
+    #
+    # it 'Metodo parcial funciona con base_posta con invocaciones anidadas' do
+    #   soldado = Soldado.new
+    #   panzer = PanzerTuneado.new()
+    #   expect(panzer.cantidad_soldados_que_puede_transportar(soldado)).to eq(35)
+    # end
 
   end
 
