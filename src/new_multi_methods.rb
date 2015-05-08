@@ -96,12 +96,12 @@ module MultiMethods
     else
       definiciones_correspondientes_a_base = definiciones_que_matchean_ordenadas.select do
           |definicion| definicion[1].matches_tipos(lista_tipos_llamado_base_posta)
-        end
+      end
 
-      raise ArgumentError, "No se puede aplicar base_posta porque es el partial method mas alto de la jerarquia" if definiciones_correspondientes_a_base.size < 2
+      raise ArgumentError, "No se puede aplicar base_posta porque es el partial method mas alto de la jerarquia para este tipo de parametro #{lista_tipos_llamado_base_posta}" if definiciones_correspondientes_a_base.size < 2
       multimethod_a_ejecutar = definiciones_correspondientes_a_base[1][1]
     end
-
+    multimethod_a_ejecutar
   end
 
   def partial_def (nombre,lista_parametros,&bloque)
@@ -237,6 +237,7 @@ class Object
 
       instancia_cualquiera = self
       llamado_a_metodo = @stack_llamados_a_metodos.pop
+      @stack_llamados_a_metodos.push(llamado_a_metodo)
 
       bloque_parcial = instancia_cualquiera.singleton_class.obtener_multimethod_a_ejecutar(llamado_a_metodo.method_called, args, llamado_a_metodo.tipos_parametros)
 

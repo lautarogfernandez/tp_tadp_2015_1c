@@ -163,7 +163,17 @@ describe 'Tests de MultiMethods' do
         end
 
         partial_def :m, [Numeric] do |n|
-          base_posta(n) + " => B>m_numeric"
+
+          base_posta(n) + " => B>m_numeric" + lala(1)
+        end
+
+        partial_def :lala, [Integer] do |i|
+          base_posta(i) + " => B>lala_Integer(#{i})"
+
+        end
+
+        partial_def :lala, [Numeric] do |n|
+          " => B>lala_numeric"
         end
 
       end
@@ -172,9 +182,18 @@ describe 'Tests de MultiMethods' do
 
 
     it 'Test base_poosta anidados (ejemplo TP)' do
-      expect(B.new.m(1)).to eq("A>m => B>m_numeric => B>m_integer(1)")
+      expect(B.new.m(1)).to eq("A>m => B>m_numeric => B>lala_numeric => B>lala_Integer(1) => B>m_integer(1)")
     end
 
+    it 'Test base_posta lanza exception cuando no puede subir mas' do
+      class A
+        partial_def :m, [Object] do |o|
+          base_posta(o) + "A>m"
+        end
+      end
+
+      expect{B.new.m(1)}.to raise_error(ArgumentError, "No se puede aplicar base_posta porque es el partial method mas alto de la jerarquia para este tipo de parametro [Object]" )
+    end
 
     it 'Metodo parcial sigue funcionando con base del punto 4' do
       soldado = Soldado.new
