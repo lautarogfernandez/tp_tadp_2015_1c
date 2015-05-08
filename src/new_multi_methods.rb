@@ -116,7 +116,11 @@ module MultiMethods
 
          agregar_al_stack_llamados_a_metodos(nombre, partial_block.lista_tipos_parametros, args)
 
-         partial_block.call_with_binding(*args, self)
+         resultado = partial_block.call_with_binding(*args, self)
+
+         @stack_llamados_a_metodos.pop
+
+         resultado
       end
     end
   end
@@ -237,7 +241,7 @@ class Object
 
       instancia_cualquiera = self
       llamado_a_metodo = @stack_llamados_a_metodos.pop
-      @stack_llamados_a_metodos.push(llamado_a_metodo)
+      # @stack_llamados_a_metodos.push(llamado_a_metodo)
 
       bloque_parcial = instancia_cualquiera.singleton_class.obtener_multimethod_a_ejecutar(llamado_a_metodo.method_called, args, llamado_a_metodo.tipos_parametros)
 

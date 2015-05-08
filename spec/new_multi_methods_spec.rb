@@ -153,7 +153,7 @@ describe 'Tests de MultiMethods' do
 
       class A
         partial_def :m, [Object] do |o|
-          "A>m"
+          " => A>m"
         end
       end
 
@@ -164,16 +164,24 @@ describe 'Tests de MultiMethods' do
 
         partial_def :m, [Numeric] do |n|
 
-          base_posta(n) + " => B>m_numeric" + lala(1)
+          lala(1) + base_posta(n) + " => B>m_numeric"
         end
 
         partial_def :lala, [Integer] do |i|
-          base_posta(i) + " => B>lala_Integer(#{i})"
+           asd + base_posta(i) + " => B>lala_Integer(#{i})"
 
         end
 
         partial_def :lala, [Numeric] do |n|
           " => B>lala_numeric"
+        end
+
+        partial_def :asd, [] do
+          pepe + " => B>asd_empty"
+        end
+
+        def pepe
+          "B>pepe"
         end
 
       end
@@ -182,7 +190,7 @@ describe 'Tests de MultiMethods' do
 
 
     it 'Test base_poosta anidados (ejemplo TP)' do
-      expect(B.new.m(1)).to eq("A>m => B>m_numeric => B>lala_numeric => B>lala_Integer(1) => B>m_integer(1)")
+      expect(B.new.m(1)).to eq("B>pepe => B>asd_empty => B>lala_numeric => B>lala_Integer(1) => A>m => B>m_numeric => B>m_integer(1)")
     end
 
     it 'Test base_posta lanza exception cuando no puede subir mas' do
