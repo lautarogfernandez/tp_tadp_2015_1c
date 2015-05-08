@@ -163,7 +163,7 @@ class Object
     responde = false
 
     if((argv.length.eql? 1) || (argv.length.eql? 2))
-      responde= self.respond_to_original?(*argv) # TODO con el super(*args) que onda??
+      responde= self.respond_to_original?(*argv)
     else
       metodo = argv[0]
       tipos_parametros = argv[2]
@@ -181,7 +181,13 @@ class Object
 
 
   def method_missing(metodo, *args)
-    if(self.is_a?(Base))
+    if(metodo.equal?(:base))
+
+      instancia_cualquiera = self
+
+      Base.new(instancia_cualquiera)
+
+    elsif(self.is_a?(Base))
 
       instancia_de_base = self
 
@@ -189,12 +195,6 @@ class Object
       lista_de_argumentos_del_multi_method = args
 
       instancia_de_base.ejecutar_metodo_con_base(metodo, lista_de_tipos_del_multi_method, lista_de_argumentos_del_multi_method)
-
-    elsif(metodo.equal?(:base))
-
-      instancia_cualquiera = self
-
-      Base.new(instancia_cualquiera)
 
     elsif(metodo.equal?(:base_posta))
 
