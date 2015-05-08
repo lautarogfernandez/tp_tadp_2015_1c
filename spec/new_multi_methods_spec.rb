@@ -318,26 +318,27 @@ describe 'Tests de MultiMethods' do
     end
 
     it 'Prueba del metodo multimethods' do
-      class B
+      class GG
       end
-      B.partial_def :saludar, [String] do |nombre|
+      GG.partial_def :saludar, [String] do |nombre|
         "Como va #{nombre}?"
       end
-      B.partial_def :gritar, [] do ||
+      GG.partial_def :gritar, [] do ||
         "AHHHHHHHHHHHHHHH!!!!!!"
       end
-      expect(B.multimethods()).to include (:saludar)
-      expect(B.multimethods().size).to be (2)
-      B.partial_def :saludar, [String,Integer] do |nombre, numero|
+      multi=GG.multimethods()
+      expect(GG.multimethods()).to include (:saludar)
+      expect(GG.multimethods().size).to be (2)
+      GG.partial_def :saludar, [String,Integer] do |nombre, numero|
         "Hola, #{nombre}, Boca salió #{numero} a 0"
       end
-      expect(B.multimethods()).to include (:saludar)
-      expect(B.multimethods().size).to be (2)
-      B.partial_def :decir_algo, [String] do |algo|
+      expect(GG.multimethods()).to include (:saludar)
+      expect(GG.multimethods().size).to be (2)
+      GG.partial_def :decir_algo, [String] do |algo|
         "Digo #{algo}"
       end
-      expect(B.multimethods()).to include (:saludar)
-      expect(B.multimethods().size).to be (3)
+      expect(GG.multimethods()).to include (:saludar)
+      expect(GG.multimethods().size).to be (3)
     end
 
     it 'Prueba del metodo multimethod' do

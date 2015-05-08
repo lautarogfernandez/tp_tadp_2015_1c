@@ -38,7 +38,7 @@ module MultiMethods
   end
 
   def multimetodos
-    @multimetodos = @multimetodos || [] #Hash.new{ |nombre_metodo,tipos| nombre_metodo[tipos] = Hash.new}
+    @multimetodos = @multimetodos || [] #como estaba antes:   Hash.new{ |nombre_metodo,tipos| nombre_metodo[tipos] = Hash.new}
   end
 
   def tiene_multimethod?(nombre_metodo)
