@@ -139,7 +139,7 @@ class Base
 
     instancia = @selfie
 
-    definiciones_parciales = obtener_definiciones_parciales_aplicables_a_instancia(instancia, metodo)
+    definiciones_parciales = instancia.obtener_definiciones_parciales_aplicables_a_instancia(metodo)
 
     if definiciones_parciales.has_key?(lista_de_tipos_del_multi_method)
       bloque_parcial = definiciones_parciales[lista_de_tipos_del_multi_method]
@@ -168,15 +168,15 @@ class Object
       metodo = argv[0]
       tipos_parametros = argv[2]
 
-      responde = obtener_definiciones_parciales_aplicables_a_instancia(self, metodo).any?  do |lista_parametros, partial_block|
+      responde = self.obtener_definiciones_parciales_aplicables_a_instancia(metodo).any?  do |lista_parametros, partial_block|
         partial_block.matches_tipos(tipos_parametros)
       end
     end
     responde
   end
 
-  def obtener_definiciones_parciales_aplicables_a_instancia(instancia, metodo)
-    instancia.singleton_class.obtener_definiciones_parciales_aplicables_a_clase_actual(metodo)
+  def obtener_definiciones_parciales_aplicables_a_instancia(metodo)
+    self.singleton_class.obtener_definiciones_parciales_aplicables_a_clase_actual(metodo)
   end
 
 
