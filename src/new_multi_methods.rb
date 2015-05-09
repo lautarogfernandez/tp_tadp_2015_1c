@@ -155,6 +155,14 @@ class Base
     @selfie = selfie
   end
 
+  def method_missing(metodo, *args)
+
+      lista_de_tipos_del_multi_method = args.delete_at(0)
+      lista_de_argumentos_del_multi_method = args
+
+      ejecutar_metodo_con_base(metodo, lista_de_tipos_del_multi_method, lista_de_argumentos_del_multi_method)
+  end
+
   def ejecutar_metodo_con_base(metodo, lista_de_tipos_del_multi_method, lista_de_argumentos_del_multi_method)
 
     instancia = @selfie
@@ -185,7 +193,7 @@ end
 
 class Object
 
-  :stack_llamados_a_metodos
+  attr_accessor :stack_llamados_a_metodos
 
   def stack_llamados_a_metodos
     @stack_llamados_a_metodos = @stack_llamados_a_metodos || []
@@ -221,59 +229,20 @@ class Object
     self.singleton_class.obtener_definiciones_parciales_aplicables_a_clase_actual(metodo)
   end
 
-  def method_missing(metodo, *args)
-    if(metodo.equal?(:base))
-
-      instancia_cualquiera = self
-
-      Base.new(instancia_cualquiera)
-
-    elsif(self.is_a?(Base))
-
-      instancia_de_base = self
-
-      lista_de_tipos_del_multi_method = args.delete_at(0)
-      lista_de_argumentos_del_multi_method = args
-
-      instancia_de_base.ejecutar_metodo_con_base(metodo, lista_de_tipos_del_multi_method, lista_de_argumentos_del_multi_method)
-
-    elsif(metodo.equal?(:base_posta))
-
-      instancia_cualquiera = self
-      llamado_a_metodo = @stack_llamados_a_metodos.pop
-      # @stack_llamados_a_metodos.push(llamado_a_metodo)
-
-      bloque_parcial = instancia_cualquiera.singleton_class.obtener_multimethod_a_ejecutar(llamado_a_metodo.method_called, args, llamado_a_metodo.tipos_parametros)
-
-      agregar_al_stack_llamados_a_metodos(llamado_a_metodo.method_called, bloque_parcial.lista_tipos_parametros, args)
-
-      bloque_parcial.call_with_binding(*args, instancia_cualquiera)
-
-      #ejecutar_base_posta_obteniendo_metodo_por_file(instancia_cualquiera, args)
-
-    else
-      super(metodo, *args)
-    end
-
+  def base
+    Base.new(self)
   end
 
-  def ejecutar_base_posta_obteniendo_metodo_por_file(instancia, args)
-    file_line= caller.select{|line| line.include?("block in <class:#{instancia.class}>")}.first.split(':')[0,2]
-    file_path = file_line[0]
-    file_line = file_line[1].to_i
+  def base_posta(*args)
+    instancia_cualquiera = self
+    llamado_a_metodo = @stack_llamados_a_metodos.pop
 
-    while file_line > 0
-      line_string = IO.readlines(file_path)[file_line]
-      if(line_string.include?("partial_def"))
-        line_with_method_name = line_string
-        break
-      end
-      file_line = file_line - 1
-    end
-    metodo_obtenido = line_with_method_name.split(',')[0].split(' ')[1].gsub!(':','').to_sym
-    bloque_parcial = instancia.class.ancestors[1].obtener_multimethod_a_ejecutar(metodo_obtenido, args)
+    bloque_parcial = instancia_cualquiera.singleton_class.obtener_multimethod_a_ejecutar(llamado_a_metodo.method_called, args, llamado_a_metodo.tipos_parametros)
 
-    bloque_parcial.call_with_binding(*args, instancia)
+    agregar_al_stack_llamados_a_metodos(llamado_a_metodo.method_called, bloque_parcial.lista_tipos_parametros, args)
+
+    bloque_parcial.call_with_binding(*args, instancia_cualquiera)
+
   end
 
 end
