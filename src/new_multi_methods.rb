@@ -114,11 +114,11 @@ module MultiMethods
 
          partial_block = class_up.obtener_multimethod_a_ejecutar(__method__, args)
 
-         agregar_al_stack_llamados_a_metodos(nombre, partial_block.lista_tipos_parametros, args)
+         @base.agregar_al_stack_llamados_a_metodos(nombre, partial_block.lista_tipos_parametros, args)
 
          resultado = partial_block.call_with_binding(*args, self)
 
-         @stack_llamados_a_metodos.pop
+         @base.stack_llamados_a_metodos.pop
 
          resultado
       end
@@ -147,13 +147,37 @@ class Module
   include MultiMethods
 end
 
+class MethodCall
+  attr_accessor :method_called, :tipos_parametros, :args
+
+  def initialize(method_called, tipos, args)
+    @method_called = method_called
+    @tipos_parametros = tipos
+    @args = args
+  end
+
+end
 
 class Base
-  attr_accessor :selfie
+  attr_accessor :selfie , :stack_llamados_a_metodos
 
   def initialize(selfie)
     @selfie = selfie
+    @stack_llamados_a_metodos=[]
   end
+
+  def method_missing(metodo, *args)
+      lista_de_tipos_del_multi_method = args.delete_at(0)
+      lista_de_argumentos_del_multi_method = args
+
+      ejecutar_metodo_con_base(metodo, lista_de_tipos_del_multi_method, lista_de_argumentos_del_multi_method)
+  end
+
+  def agregar_al_stack_llamados_a_metodos(nombre_metodo, tipos_parametro, args)
+    @stack_llamados_a_metodos.push( MethodCall.new(nombre_metodo, tipos_parametro, args) )
+  end
+
+
 
   def ejecutar_metodo_con_base(metodo, lista_de_tipos_del_multi_method, lista_de_argumentos_del_multi_method)
 
@@ -171,28 +195,16 @@ class Base
   end
 end
 
-class MethodCall
-  attr_accessor :method_called, :tipos_parametros, :args
-
-  def initialize(method_called, tipos, args)
-    @method_called = method_called
-    @tipos_parametros = tipos
-    @args = args
-  end
-
-end
-
 
 class Object
 
-  :stack_llamados_a_metodos
+  attr_accessor :base
 
-  def stack_llamados_a_metodos
-    @stack_llamados_a_metodos = @stack_llamados_a_metodos || []
-  end
+  alias_method :initialize_original, :initialize
 
-  def agregar_al_stack_llamados_a_metodos(nombre_metodo, tipos_parametro, args)
-    stack_llamados_a_metodos.push( MethodCall.new(nombre_metodo, tipos_parametro, args) )
+  def initialize(*args)
+    self.initialize_original(*args)
+    @base=Base.new(self)
   end
 
   def partial_def (nombre,lista_parametros,&bloque)
@@ -221,39 +233,22 @@ class Object
     self.singleton_class.obtener_definiciones_parciales_aplicables_a_clase_actual(metodo)
   end
 
-  def method_missing(metodo, *args)
-    if(metodo.equal?(:base))
+=begin
+  def base
+    Base.new(self)
+  end
+=end
 
-      instancia_cualquiera = self
+  def base_posta(*args)
 
-      Base.new(instancia_cualquiera)
+    instancia_cualquiera = self
+    llamado_a_metodo = @stack_llamados_a_metodos.pop
 
-    elsif(self.is_a?(Base))
+    bloque_parcial = instancia_cualquiera.singleton_class.obtener_multimethod_a_ejecutar(llamado_a_metodo.method_called, args, llamado_a_metodo.tipos_parametros)
 
-      instancia_de_base = self
+    @base.agregar_al_stack_llamados_a_metodos(llamado_a_metodo.method_called, bloque_parcial.lista_tipos_parametros, args)
 
-      lista_de_tipos_del_multi_method = args.delete_at(0)
-      lista_de_argumentos_del_multi_method = args
-
-      instancia_de_base.ejecutar_metodo_con_base(metodo, lista_de_tipos_del_multi_method, lista_de_argumentos_del_multi_method)
-
-    elsif(metodo.equal?(:base_posta))
-
-      instancia_cualquiera = self
-      llamado_a_metodo = @stack_llamados_a_metodos.pop
-      # @stack_llamados_a_metodos.push(llamado_a_metodo)
-
-      bloque_parcial = instancia_cualquiera.singleton_class.obtener_multimethod_a_ejecutar(llamado_a_metodo.method_called, args, llamado_a_metodo.tipos_parametros)
-
-      agregar_al_stack_llamados_a_metodos(llamado_a_metodo.method_called, bloque_parcial.lista_tipos_parametros, args)
-
-      bloque_parcial.call_with_binding(*args, instancia_cualquiera)
-
-      #ejecutar_base_posta_obteniendo_metodo_por_file(instancia_cualquiera, args)
-
-    else
-      super(metodo, *args)
-    end
+    bloque_parcial.call_with_binding(*args, instancia_cualquiera)
 
   end
 
